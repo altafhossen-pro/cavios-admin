@@ -60,6 +60,12 @@ export const MENU_ITEMS: MenuItemType[] = [
         parentKey: 'ecommerce',
       },
       {
+        key: 'ecommerce-categories',
+        label: 'Categories',
+        url: '/ecommerce/categories',
+        parentKey: 'ecommerce',
+      },
+      {
         key: 'ecommerce-customers',
         label: 'Customers',
         url: '/ecommerce/customers',

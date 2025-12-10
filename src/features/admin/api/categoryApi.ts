@@ -62,12 +62,13 @@ export const getCategories = async (params: {
       pagination: response.data.pagination,
       message: response.data.message,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching categories:', error);
+    const err = error as { response?: { data?: { message?: string } }; message?: string };
     return {
       success: false,
       data: [],
-      message: error.response?.data?.message || error.message || 'Failed to fetch categories',
+      message: err.response?.data?.message || err.message || 'Failed to fetch categories',
     };
   }
 };
@@ -83,6 +84,124 @@ export const getAllCategories = async (): Promise<Category[]> => {
   } catch (error) {
     console.error('Error fetching all categories:', error);
     return [];
+  }
+};
+
+/**
+ * Get category by ID
+ * @param {string} id - Category ID
+ * @returns {Promise<CategoryResponse>} API response with category
+ */
+export interface CategoryResponse {
+  success: boolean;
+  data: Category;
+  message: string;
+}
+
+export const getCategoryById = async (id: string): Promise<CategoryResponse> => {
+  try {
+    const response = await httpClient.get(`/category/${id}`);
+    return {
+      success: response.data.success,
+      data: response.data.data,
+      message: response.data.message,
+    };
+  } catch (error: unknown) {
+    console.error('Error fetching category:', error);
+    const err = error as { response?: { data?: { message?: string } }; message?: string };
+    throw {
+      success: false,
+      data: {} as Category,
+      message: err.response?.data?.message || err.message || 'Failed to fetch category',
+    };
+  }
+};
+
+/**
+ * Create category
+ * @param {Object} categoryData - Category data
+ * @returns {Promise<CategoryResponse>} API response with created category
+ */
+export interface CreateCategoryRequest {
+  name: string;
+  slug: string;
+  image?: string;
+  parent?: string | null;
+  isFeatured?: boolean;
+}
+
+export const createCategory = async (categoryData: CreateCategoryRequest): Promise<CategoryResponse> => {
+  try {
+    const response = await httpClient.post('/category', categoryData);
+    return {
+      success: response.data.success,
+      data: response.data.data,
+      message: response.data.message,
+    };
+  } catch (error: unknown) {
+    console.error('Error creating category:', error);
+    const err = error as { response?: { data?: { message?: string } }; message?: string };
+    throw {
+      success: false,
+      data: {} as Category,
+      message: err.response?.data?.message || err.message || 'Failed to create category',
+    };
+  }
+};
+
+/**
+ * Update category
+ * @param {string} id - Category ID
+ * @param {Object} categoryData - Updated category data
+ * @returns {Promise<CategoryResponse>} API response with updated category
+ */
+export interface UpdateCategoryRequest {
+  name?: string;
+  slug?: string;
+  image?: string;
+  parent?: string | null;
+  isFeatured?: boolean;
+  isActive?: boolean;
+}
+
+export const updateCategory = async (id: string, categoryData: UpdateCategoryRequest): Promise<CategoryResponse> => {
+  try {
+    const response = await httpClient.put(`/category/${id}`, categoryData);
+    return {
+      success: response.data.success,
+      data: response.data.data,
+      message: response.data.message,
+    };
+  } catch (error: unknown) {
+    console.error('Error updating category:', error);
+    const err = error as { response?: { data?: { message?: string } }; message?: string };
+    throw {
+      success: false,
+      data: {} as Category,
+      message: err.response?.data?.message || err.message || 'Failed to update category',
+    };
+  }
+};
+
+/**
+ * Delete category
+ * @param {string} id - Category ID
+ * @returns {Promise<{success: boolean; message: string}>} API response
+ */
+export const deleteCategory = async (id: string): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await httpClient.delete(`/category/${id}`);
+    return {
+      success: response.data.success,
+      message: response.data.message,
+    };
+  } catch (error: unknown) {
+    console.error('Error deleting category:', error);
+    const err = error as { response?: { data?: { message?: string } }; message?: string };
+    throw {
+      success: false,
+      message: err.response?.data?.message || err.message || 'Failed to delete category',
+    };
   }
 };
 

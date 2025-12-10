@@ -10,6 +10,7 @@ const Sales = lazy(() => import('@/app/(admin)/dashboard/sales/page'))
 const EcommerceProducts = lazy(() => import('@/app/(admin)/ecommerce/products/NewProducts'))
 const EcommerceProductDetails = lazy(() => import('@/app/(admin)/ecommerce/products/[productId]/page'))
 const EcommerceProductCreate = lazy(() => import('@/app/(admin)/ecommerce/products/create/page'))
+const EcommerceCategories = lazy(() => import('@/app/(admin)/ecommerce/categories/NewCategories'))
 const EcommerceCustomers = lazy(() => import('@/app/(admin)/ecommerce/customers/NewCustomers'))
 const EcommerceStaff = lazy(() => import('@/app/(admin)/ecommerce/customers/NewStaff'))
 const EcommerceOrders = lazy(() => import('@/app/(admin)/ecommerce/orders/NewOrders'))
@@ -151,6 +152,11 @@ const appsRoutes: RoutesProps[] = [
     name: 'Create Product',
     path: '/products/create',
     element: <EcommerceProductCreate />,
+  },
+  {
+    name: 'Categories',
+    path: '/categories',
+    element: <EcommerceCategories />,
   },
   {
     name: 'Customers',

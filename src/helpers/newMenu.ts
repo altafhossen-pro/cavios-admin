@@ -32,6 +32,12 @@ export const getNewMenuItems = (): MenuItemType[] => {
       ],
     },
     {
+      key: 'categories',
+      icon: 'iconamoon:folder-duotone',
+      label: 'Categories',
+      url: '/categories',
+    },
+    {
       key: 'orders',
       icon: 'bx:cart',
       label: 'Orders',
