@@ -36,7 +36,7 @@ const Products = () => {
                   <input type="search" className="form-control" id="search" placeholder="Search ..." />
                 </div>
                 <div>
-                  <Link to="/ecommerce/products/create" className="btn btn-primary d-flex align-items-center">
+                  <Link to="/products/create" className="btn btn-primary d-flex align-items-center">
                     <IconifyIcon icon="bx:plus" className="me-1" />
                     Add Product
                   </Link>

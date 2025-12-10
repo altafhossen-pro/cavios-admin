@@ -7,14 +7,16 @@ const Finance = lazy(() => import('@/app/(admin)/dashboard/finance/page'))
 const Sales = lazy(() => import('@/app/(admin)/dashboard/sales/page'))
 
 // Apps Routes
-const EcommerceProducts = lazy(() => import('@/app/(admin)/ecommerce/products/page'))
+const EcommerceProducts = lazy(() => import('@/app/(admin)/ecommerce/products/NewProducts'))
 const EcommerceProductDetails = lazy(() => import('@/app/(admin)/ecommerce/products/[productId]/page'))
 const EcommerceProductCreate = lazy(() => import('@/app/(admin)/ecommerce/products/create/page'))
-const EcommerceCustomers = lazy(() => import('@/app/(admin)/ecommerce/customers/page'))
+const EcommerceCustomers = lazy(() => import('@/app/(admin)/ecommerce/customers/NewCustomers'))
+const EcommerceStaff = lazy(() => import('@/app/(admin)/ecommerce/customers/NewStaff'))
 const EcommerceSellers = lazy(() => import('@/app/(admin)/ecommerce/sellers/page'))
-const EcommerceOrders = lazy(() => import('@/app/(admin)/ecommerce/orders/page'))
-const EcommerceOrderDetails = lazy(() => import('@/app/(admin)/ecommerce/orders/[orderId]/page'))
-const EcommerceInventory = lazy(() => import('@/app/(admin)/ecommerce/inventory/page'))
+const EcommerceOrders = lazy(() => import('@/app/(admin)/ecommerce/orders/NewOrders'))
+const EcommerceOrderDetails = lazy(() => import('@/app/(admin)/ecommerce/orders/[orderId]/NewOrderDetail'))
+const EcommerceInventory = lazy(() => import('@/app/(admin)/ecommerce/inventory/NewInventory'))
+const ProductVariantsStock = lazy(() => import('@/app/(admin)/ecommerce/inventory/products/[productId]/variants/page'))
 const Chat = lazy(() => import('@/app/(admin)/apps/chat/page'))
 const Email = lazy(() => import('@/app/(admin)/apps/email/page'))
 const Todo = lazy(() => import('@/app/(admin)/apps/todo/page'))
@@ -138,28 +140,28 @@ const generalRoutes: RoutesProps[] = [
 const appsRoutes: RoutesProps[] = [
   {
     name: 'Products',
-    path: '/ecommerce/products',
+    path: '/products',
     element: <EcommerceProducts />,
   },
   {
     name: 'Product Details',
-    path: '/ecommerce/products/:productId',
+    path: '/products/:productId',
     element: <EcommerceProductDetails />,
   },
   {
     name: 'Create Product',
-    path: '/ecommerce/products/create',
+    path: '/products/create',
     element: <EcommerceProductCreate />,
   },
   {
     name: 'Customers',
-    path: '/ecommerce/customers',
+    path: '/customers',
     element: <EcommerceCustomers />,
   },
   {
-    name: 'Sellers',
-    path: '/ecommerce/sellers',
-    element: <EcommerceSellers />,
+    name: 'Staff',
+    path: '/staff',
+    element: <EcommerceStaff />,
   },
   {
     name: 'Orders',
@@ -173,8 +175,13 @@ const appsRoutes: RoutesProps[] = [
   },
   {
     name: 'Inventory',
-    path: '/ecommerce/inventory',
+    path: '/inventory',
     element: <EcommerceInventory />,
+  },
+  {
+    name: 'Product Variants Stock',
+    path: '/inventory/products/:productId/variants',
+    element: <ProductVariantsStock />,
   },
   {
     name: 'Chat',

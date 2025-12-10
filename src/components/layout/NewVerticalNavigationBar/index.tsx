@@ -3,13 +3,13 @@ import { lazy, Suspense } from 'react'
 import FallbackLoading from '@/components/FallbackLoading'
 import LogoBox from '@/components/LogoBox'
 import SimplebarReactClient from '@/components/wrappers/SimplebarReactClient'
-import { getMenuItems } from '@/helpers/menu'
+import { getNewMenuItems } from '@/helpers/newMenu'
 import NewHoverMenuToggle from './components/NewHoverMenuToggle'
 
 const NewAppMenu = lazy(() => import('./components/NewAppMenu'))
 
 const NewVerticalNavigationBar = () => {
-  const menuItems = getMenuItems()
+  const menuItems = getNewMenuItems()
 
   return (
     <div className="main-nav" id="leftside-menu-container">

@@ -6,7 +6,7 @@ import type { ChildrenType } from '@/types/component-props'
 import Preloader from '@/components/Preloader'
 
 const TopNavigationBar = lazy(() => import('@/components/layout/TopNavigationBar'))
-const VerticalNavigationBar = lazy(() => import('@/components/layout/VerticalNavigationBar'))
+const NewVerticalNavigationBar = lazy(() => import('@/components/layout/NewVerticalNavigationBar'))
 
 const AdminLayout = ({ children }: ChildrenType) => {
   return (
@@ -16,7 +16,7 @@ const AdminLayout = ({ children }: ChildrenType) => {
       </Suspense>
 
       <Suspense fallback={<FallbackLoading />}>
-        <VerticalNavigationBar />
+        <NewVerticalNavigationBar />
       </Suspense>
 
       <div className="page-content">

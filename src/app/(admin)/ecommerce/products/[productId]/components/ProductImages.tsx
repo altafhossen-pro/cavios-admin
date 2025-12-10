@@ -1,42 +1,57 @@
-import clsx from 'clsx'
+interface BackendProduct {
+  title?: string
+  featuredImage?: string
+  gallery?: Array<{ url: string; altText?: string; isPrimary?: boolean; sortOrder?: number }>
+  [key: string]: unknown
+}
 
-import { useState } from 'react'
-import { Nav, NavItem, NavLink, TabContainer, TabContent, TabPane } from 'react-bootstrap'
-
-import type { EcommerceProductType } from '@/types/data'
-
-import product1 from '@/assets/images/products/product-1(1).png'
-import product2 from '@/assets/images/products/product-1(2).png'
-import product3 from '@/assets/images/products/product-1(3).png'
-import product4 from '@/assets/images/products/product-1(4).png'
-
-const ProductImages = ({ product }: { product: EcommerceProductType }) => {
-  const { name } = product
-
-  // You can replace below static images with the above ↑ images coming as props from parent element
-  const productImages = [product2, product1, product3, product4]
-  const eventKeyPrefix = name + '-'
-  const [activeImageTab, setActiveImageTab] = useState(eventKeyPrefix + 0)
+const ProductImages = ({ product }: { product: BackendProduct }) => {
+  const featuredImage = product.featuredImage
+  const galleryImages = product.gallery || []
+  const productName = product.title || 'Product'
 
   return (
-    <TabContainer activeKey={activeImageTab}>
-      <TabContent>
-        {productImages.map((image, idx) => (
-          <TabPane key={idx} eventKey={eventKeyPrefix + idx} className="fade">
-            <img src={image} alt={name + idx} className="img-fluid mx-auto d-block rounded" />
-          </TabPane>
+    <div>
+      {/* Main Featured Image */}
+      {featuredImage && (
+        <div className="mb-3">
+          <h6 className="mb-2">Featured Image</h6>
+          <img 
+            src={featuredImage} 
+            alt={`${productName} - Featured`} 
+            className="img-fluid w-100 rounded border" 
+            style={{ maxHeight: '400px', objectFit: 'contain' }}
+          />
+        </div>
+      )}
+
+      {/* Gallery Images - Simple Grid Display */}
+      {galleryImages.length > 0 && (
+        <div>
+          <h6 className="mb-2">Gallery Images ({galleryImages.length})</h6>
+          <div className="row g-3">
+            {galleryImages.map((galleryImg, idx) => (
+              <div key={idx} className="col-12 col-md-6">
+                <div className="position-relative" style={{ paddingBottom: '100%' }}>
+                  <img 
+                    src={galleryImg.url} 
+                    alt={galleryImg.altText || `${productName} Gallery ${idx + 1}`} 
+                    className="position-absolute top-0 start-0 w-100 h-100 rounded border" 
+                    style={{ objectFit: 'cover' }}
+                  />
+                </div>
+              </div>
         ))}
-      </TabContent>
-      <Nav variant="pills" justify>
-        {productImages.map((image, idx) => (
-          <NavItem onClick={() => setActiveImageTab(eventKeyPrefix + idx)} key={idx} className="nav-item">
-            <NavLink as={'button'} className={clsx('product-thumb', { active: eventKeyPrefix + idx === activeImageTab })}>
-              <img src={image} alt={name + 2 + '-thumb'} className="img-fluid mx-auto rounded" />
-            </NavLink>
-          </NavItem>
-        ))}
-      </Nav>
-    </TabContainer>
+          </div>
+        </div>
+      )}
+
+      {!featuredImage && galleryImages.length === 0 && (
+        <div className="text-center p-4 border rounded">
+          <p className="text-muted">No images available</p>
+        </div>
+      )}
+    </div>
   )
 }
 

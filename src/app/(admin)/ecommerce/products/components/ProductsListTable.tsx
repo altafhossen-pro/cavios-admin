@@ -19,13 +19,13 @@ const columns: ColumnDef<EcommerceProductType>[] = [
     }) => (
       <div className="d-flex align-items-center">
         <div className="flex-shrink-0 me-3">
-          <Link to={`/ecommerce/products/${id}`}>
+          <Link to={`/products/${id}`}>
             <img src={images[0]} alt={name} className="img-fluid avatar-sm" />
           </Link>
         </div>
         <div className="flex-grow-1">
           <h5 className="mt-0 mb-1">
-            <Link to={`/ecommerce/products/${id}`} className="text-reset">
+            <Link to={`/products/${id}`} className="text-reset">
               {name}
             </Link>
           </h5>

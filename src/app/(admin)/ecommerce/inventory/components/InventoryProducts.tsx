@@ -30,7 +30,7 @@ const InventoryProducts = () => {
                 <IconifyIcon icon="bx:import" className="me-1 icons-center" />
                 Import
               </Button>
-              <Link to="/ecommerce/products/create" className="btn btn-primary d-inline-flex align-items-center ms-md-auto">
+              <Link to="/products/create" className="btn btn-primary d-inline-flex align-items-center ms-md-auto">
                 <IconifyIcon icon="bx:plus" className="me-1" />
                 Add Product
               </Link>

@@ -1,7 +1,7 @@
-import { Card, CardBody, Col, Row } from 'react-bootstrap'
+import { Col, Row } from 'react-bootstrap'
 
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb'
-import CreateProductForms from './components/CreateProductForms'
+import NewCreateProductForm from './components/NewCreateProductForm'
 import PageMetaData from '@/components/PageTitle'
 
 const CreateProduct = () => {
@@ -12,11 +12,7 @@ const CreateProduct = () => {
 
       <Row>
         <Col>
-          <Card>
-            <CardBody>
-              <CreateProductForms />
-            </CardBody>
-          </Card>
+          <NewCreateProductForm />
         </Col>
       </Row>
     </>
