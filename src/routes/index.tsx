@@ -12,7 +12,6 @@ const EcommerceProductDetails = lazy(() => import('@/app/(admin)/ecommerce/produ
 const EcommerceProductCreate = lazy(() => import('@/app/(admin)/ecommerce/products/create/page'))
 const EcommerceCustomers = lazy(() => import('@/app/(admin)/ecommerce/customers/NewCustomers'))
 const EcommerceStaff = lazy(() => import('@/app/(admin)/ecommerce/customers/NewStaff'))
-const EcommerceSellers = lazy(() => import('@/app/(admin)/ecommerce/sellers/page'))
 const EcommerceOrders = lazy(() => import('@/app/(admin)/ecommerce/orders/NewOrders'))
 const EcommerceOrderDetails = lazy(() => import('@/app/(admin)/ecommerce/orders/[orderId]/NewOrderDetail'))
 const EcommerceInventory = lazy(() => import('@/app/(admin)/ecommerce/inventory/NewInventory'))

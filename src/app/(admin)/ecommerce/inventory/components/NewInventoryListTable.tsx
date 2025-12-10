@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Table, Badge, Button, Pagination } from 'react-bootstrap'
+import { Table, Badge, Pagination } from 'react-bootstrap'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import type { InventoryProduct } from '@/features/admin/api/inventoryApi'
 
@@ -12,10 +12,10 @@ interface NewInventoryListTableProps {
     totalPages: number
   }
   onPageChange: (page: number) => void
-  onRefresh: () => void
+  onRefresh?: () => void
 }
 
-const NewInventoryListTable = ({ products, pagination, onPageChange, onRefresh }: NewInventoryListTableProps) => {
+const NewInventoryListTable = ({ products, pagination, onPageChange }: NewInventoryListTableProps) => {
   const calculateTotalStock = (product: InventoryProduct): number => {
     if (product.variants && product.variants.length > 0) {
       return product.variants.reduce((sum, variant) => sum + (variant.stockQuantity || 0), 0)

@@ -32,9 +32,14 @@ export interface ProductFormData {
   // Variants (for variable products)
   variants: Array<{
     sku: string
+    barcode?: string
     attributes: Array<{ name: string; value: string; displayValue: string; hexCode: string }>
     currentPrice: number
     originalPrice: number
+    costPrice?: number
+    stockQuantity?: number
+    lowStockThreshold?: number
+    stockStatus?: string
     weight: number
     dimensions: { length: number; width: number; height: number }
     images: Array<{ url: string; altText: string; isPrimary: boolean; sortOrder: number }>

@@ -2,7 +2,12 @@ import { Card, CardBody, Row, Col, Form, Button } from 'react-bootstrap'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { TabComponentProps } from './types'
 
-const ImagesTab = ({ register, watch, setValue, uploading, onFeaturedImageUpload, onGalleryUpload, onRemoveGalleryImage }: TabComponentProps) => {
+const ImagesTab = ({ watch, uploading, onFeaturedImageUpload, onGalleryUpload, onRemoveGalleryImage, register, setValue, errors }: TabComponentProps) => {
+  // register, setValue, and errors are required by TabComponentProps but not used in this component
+  // They are included to satisfy the interface but can be ignored
+  void register
+  void setValue
+  void errors
   const gallery = watch('gallery') || []
   const featuredImage = watch('featuredImage')
 

@@ -3,7 +3,7 @@ import { Col, Row, Button, Dropdown, DropdownMenu, DropdownToggle, DropdownItem,
 import { useNavigate, useParams } from 'react-router-dom'
 
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb'
-import { getAdminOrderById, updateOrderStatus, updateOrderComprehensive } from '@/features/admin/api/orderApi'
+import { getAdminOrderById, updateOrderStatus } from '@/features/admin/api/orderApi'
 import Preloader from '@/components/Preloader'
 import NewOrderProducts from './components/NewOrderProducts'
 import NewOrderSummery from './components/NewOrderSummery'
@@ -184,25 +184,6 @@ const NewOrderDetail = () => {
       active: index <= currentIndex,
       completed: index < currentIndex,
     }))
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'delivered':
-        return 'success'
-      case 'processing':
-      case 'confirmed':
-        return 'primary'
-      case 'shipped':
-        return 'info'
-      case 'cancelled':
-        return 'danger'
-      case 'returned':
-        return 'warning'
-      case 'pending':
-      default:
-        return 'secondary'
-    }
   }
 
   const getStatusLabel = (status: string) => {
