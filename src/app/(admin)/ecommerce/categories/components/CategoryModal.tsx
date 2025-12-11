@@ -73,7 +73,7 @@ const CategoryModal = ({ show, onHide, onSuccess, category }: CategoryModalProps
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
     setFormData((prev) => ({
       ...prev,
