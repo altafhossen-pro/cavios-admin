@@ -1,19 +1,34 @@
 import type { ApexOptions } from 'apexcharts'
 import ReactApexChart from 'react-apexcharts'
-import { Button, Card, CardBody, CardHeader, CardTitle } from 'react-bootstrap'
+import { Card, CardBody, CardHeader, CardTitle } from 'react-bootstrap'
+import { currency } from '@/context/constants'
+import type { ChartDataPoint } from '@/features/admin/api/analyticsApi'
 
-const OverviewChart = () => {
+interface OverviewChartProps {
+  chartData: ChartDataPoint[]
+}
+
+const OverviewChart = ({ chartData }: OverviewChartProps) => {
+  // Format chart data for ApexCharts
+  const categories = chartData.map((item) => {
+    const date = new Date(item._id.year, item._id.month - 1, item._id.day)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  })
+  
+  const revenueData = chartData.map((item) => parseFloat((item.revenue / 1000).toFixed(2)))
+  const ordersData = chartData.map((item) => item.orders)
+
   const chartOptions: ApexOptions = {
     series: [
       {
         name: 'Revenue',
         type: 'area',
-        data: [34, 65, 46, 68, 49, 61, 42, 44, 78, 52, 63, 67],
+        data: revenueData.length > 0 ? revenueData : [0],
       },
       {
         name: 'Orders',
         type: 'line',
-        data: [8, 12, 7, 17, 21, 11, 5, 9, 7, 29, 12, 35],
+        data: ordersData.length > 0 ? ordersData : [0],
       },
     ],
     chart: {
@@ -47,7 +62,7 @@ const OverviewChart = () => {
       },
     },
     xaxis: {
-      categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      categories: categories.length > 0 ? categories : ['No Data'],
       axisTicks: {
         show: false,
       },
@@ -114,7 +129,7 @@ const OverviewChart = () => {
         {
           formatter: function (y) {
             if (typeof y !== 'undefined') {
-              return '$' + y.toFixed(2) + 'k'
+              return currency + y.toFixed(2) + 'k'
             }
             return y
           },
@@ -122,7 +137,7 @@ const OverviewChart = () => {
         {
           formatter: function (y) {
             if (typeof y !== 'undefined') {
-              return '$' + y.toFixed(2) + 'k'
+              return y.toString()
             }
             return y
           },
@@ -134,20 +149,6 @@ const OverviewChart = () => {
     <Card>
       <CardHeader className="d-flex justify-content-between align-items-center">
         <CardTitle>Overview</CardTitle>
-        <div className="icons-center gap-1">
-          <Button variant="soft-secondary" size="sm" type="button">
-            ALL
-          </Button>
-          <Button variant="soft-secondary" size="sm" type="button">
-            1M
-          </Button>
-          <Button variant="soft-secondary" size="sm" type="button">
-            6M
-          </Button>
-          <Button variant="soft-secondary" size="sm" type="button" active>
-            1Y
-          </Button>
-        </div>
       </CardHeader>
       <CardBody>
         <div dir="ltr">

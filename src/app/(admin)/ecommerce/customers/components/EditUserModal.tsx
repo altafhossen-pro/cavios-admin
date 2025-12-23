@@ -3,6 +3,7 @@ import { Modal, Button, Form, Row, Col, Alert } from 'react-bootstrap'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import Preloader from '@/components/Preloader'
 import { updateUser, getUserById } from '@/features/admin/api/userApi'
+import { getAllRoles, Role } from '@/features/admin/api/roleApi'
 import { useAuthContext } from '@/context/useAuthContext'
 
 interface EditUserModalProps {
@@ -16,17 +17,38 @@ const EditUserModal = ({ show, onHide, userId, onSuccess }: EditUserModalProps) 
   const { user: currentUser } = useAuthContext()
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(false)
+  const [fetchingRoles, setFetchingRoles] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [roles, setRoles] = useState<Role[]>([])
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     address: '',
     status: 'active',
+    roleId: '',
   })
 
   // Check if user is editing their own profile
   const isEditingSelf = Boolean(currentUser?.id && userId && currentUser.id === userId)
+
+  const fetchRoles = async () => {
+    setFetchingRoles(true)
+    try {
+      const allRoles = await getAllRoles()
+      if (Array.isArray(allRoles)) {
+        setRoles(allRoles)
+      } else {
+        setRoles([])
+      }
+    } catch (err: unknown) {
+      const error = err as { message?: string }
+      console.error('Error fetching roles:', error)
+      setRoles([])
+    } finally {
+      setFetchingRoles(false)
+    }
+  }
 
   const fetchUserData = useCallback(async () => {
     if (!userId) return
@@ -36,12 +58,24 @@ const EditUserModal = ({ show, onHide, userId, onSuccess }: EditUserModalProps) 
     try {
       const response = await getUserById(userId)
       if (response.success && response.data) {
+        const userData = response.data
+        // Extract roleId - it might be a string or an object with _id
+        let roleId = ''
+        if (userData.roleId) {
+          if (typeof userData.roleId === 'string') {
+            roleId = userData.roleId
+          } else if (typeof userData.roleId === 'object' && userData.roleId !== null && '_id' in userData.roleId) {
+            roleId = (userData.roleId as { _id: string })._id
+          }
+        }
+        
         setFormData({
-          name: response.data.name || '',
-          email: response.data.email || '',
-          phone: response.data.phone || '',
-          address: response.data.address || '',
-          status: response.data.status || 'active',
+          name: userData.name || '',
+          email: userData.email || '',
+          phone: userData.phone || '',
+          address: userData.address || '',
+          status: userData.status || 'active',
+          roleId: roleId,
         })
       } else {
         setError(response.message || 'Failed to fetch user data')
@@ -56,6 +90,7 @@ const EditUserModal = ({ show, onHide, userId, onSuccess }: EditUserModalProps) 
 
   useEffect(() => {
     if (show && userId) {
+      fetchRoles()
       fetchUserData()
     } else {
       // Reset form when modal closes
@@ -65,8 +100,10 @@ const EditUserModal = ({ show, onHide, userId, onSuccess }: EditUserModalProps) 
         phone: '',
         address: '',
         status: 'active',
+        roleId: '',
       })
       setError(null)
+      setRoles([])
     }
   }, [show, userId, fetchUserData])
 
@@ -74,12 +111,18 @@ const EditUserModal = ({ show, onHide, userId, onSuccess }: EditUserModalProps) 
     e.preventDefault()
     if (!userId) return
 
-    // Prevent updating email and status if editing self
-    const updateData = { ...formData }
+    // Prevent updating email, status, and roleId if editing self
+    const updateData: { [key: string]: string | null | undefined } = { ...formData }
     if (isEditingSelf) {
-      // Don't send email and status changes for self
-      delete (updateData as { email?: string }).email
-      delete (updateData as { status?: string }).status
+      // Don't send email, status, and roleId changes for self
+      delete updateData.email
+      delete updateData.status
+      delete updateData.roleId
+    }
+    
+    // Convert empty string roleId to null
+    if (updateData.roleId === '') {
+      updateData.roleId = null
     }
 
     setLoading(true)
@@ -168,6 +211,34 @@ const EditUserModal = ({ show, onHide, userId, onSuccess }: EditUserModalProps) 
                     onChange={(e) => handleChange('phone', e.target.value)}
                     placeholder="Enter phone number"
                   />
+                </Form.Group>
+              </Col>
+
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Role</Form.Label>
+                  <Form.Select
+                    value={formData.roleId}
+                    onChange={(e) => handleChange('roleId', e.target.value)}
+                    disabled={isEditingSelf || fetchingRoles}
+                  >
+                    <option value="">No Role (Customer)</option>
+                    {roles.map((role) => (
+                      <option key={role._id} value={role._id}>
+                        {role.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                  {fetchingRoles && (
+                    <Form.Text className="text-muted">
+                      Loading roles...
+                    </Form.Text>
+                  )}
+                  {isEditingSelf && (
+                    <Form.Text className="text-muted">
+                      You cannot update your own role.
+                    </Form.Text>
+                  )}
                 </Form.Group>
               </Col>
 

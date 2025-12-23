@@ -16,7 +16,7 @@ export interface AdminProductsParams {
 
 export interface AdminProductsResponse {
   success: boolean;
-  data: any[];
+  data: Product[];
   pagination: {
     total: number;
     page: number;
@@ -57,8 +57,9 @@ export const getAdminProducts = async (params: AdminProductsParams = {}): Promis
       },
       message: response.data.message,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching admin products:', error);
+    const err = error as { response?: { data?: { message?: string } }; message?: string };
     return {
       success: false,
       data: [],
@@ -68,14 +69,14 @@ export const getAdminProducts = async (params: AdminProductsParams = {}): Promis
         limit: 50,
         totalPages: 0,
       },
-      message: error.response?.data?.message || error.message || 'Failed to fetch products',
+      message: err.response?.data?.message || err.message || 'Failed to fetch products',
     };
   }
 };
 
 export interface AdminProductResponse {
   success: boolean;
-  data: any;
+  data: Product | null;
   message: string;
 }
 
@@ -92,12 +93,13 @@ export const getAdminProductById = async (productId: string): Promise<AdminProdu
       data: response.data.data || null,
       message: response.data.message,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching admin product:', error);
+    const err = error as { response?: { data?: { message?: string } }; message?: string };
     return {
       success: false,
       data: null,
-      message: error.response?.data?.message || error.message || 'Failed to fetch product',
+      message: err.response?.data?.message || err.message || 'Failed to fetch product',
     };
   }
 };
@@ -203,9 +205,28 @@ export interface CreateProductRequest {
   slug?: string;
 }
 
+// Product type based on backend response (extends CreateProductRequest with additional fields)
+export interface Product extends CreateProductRequest {
+  _id?: string;
+  id?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  averageRating?: number;
+  totalReviews?: number;
+  totalSold?: number;
+  ratingBreakdown?: {
+    five?: number;
+    four?: number;
+    three?: number;
+    two?: number;
+    one?: number;
+  };
+  [key: string]: unknown;
+}
+
 export interface CreateProductResponse {
   success: boolean;
-  data: any;
+  data: Product | null;
   message: string;
 }
 
@@ -222,12 +243,71 @@ export const createProduct = async (productData: CreateProductRequest): Promise<
       data: response.data.data || null,
       message: response.data.message,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating product:', error);
+    const err = error as { response?: { data?: { message?: string } }; message?: string };
     return {
       success: false,
       data: null,
-      message: error.response?.data?.message || error.message || 'Failed to create product',
+      message: err.response?.data?.message || err.message || 'Failed to create product',
+    };
+  }
+};
+
+export interface UpdateProductResponse {
+  success: boolean;
+  data: Product | null;
+  message: string;
+}
+
+/**
+ * Update an existing product
+ * @param {string} productId - Product ID
+ * @param {CreateProductRequest} productData - Product data to update
+ * @returns {Promise<UpdateProductResponse>} API response with updated product
+ */
+export const updateProduct = async (productId: string, productData: CreateProductRequest): Promise<UpdateProductResponse> => {
+  try {
+    const response = await httpClient.patch(`/product/${productId}`, productData);
+    return {
+      success: response.data.success,
+      data: response.data.data || null,
+      message: response.data.message,
+    };
+  } catch (error: unknown) {
+    console.error('Error updating product:', error);
+    const err = error as { response?: { data?: { message?: string } }; message?: string };
+    return {
+      success: false,
+      data: null,
+      message: err.response?.data?.message || err.message || 'Failed to update product',
+    };
+  }
+};
+
+export interface DeleteProductResponse {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * Delete a product
+ * @param {string} productId - Product ID
+ * @returns {Promise<DeleteProductResponse>} API response
+ */
+export const deleteProduct = async (productId: string): Promise<DeleteProductResponse> => {
+  try {
+    const response = await httpClient.delete(`/product/${productId}`);
+    return {
+      success: response.data.success,
+      message: response.data.message,
+    };
+  } catch (error: unknown) {
+    console.error('Error deleting product:', error);
+    const err = error as { response?: { data?: { message?: string } }; message?: string };
+    return {
+      success: false,
+      message: err.response?.data?.message || err.message || 'Failed to delete product',
     };
   }
 };

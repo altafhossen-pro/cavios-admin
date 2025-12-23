@@ -1,9 +1,22 @@
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import type { ApexOptions } from 'apexcharts'
 import ReactApexChart from 'react-apexcharts'
-import { Card, CardBody, CardHeader, CardTitle, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Table } from 'react-bootstrap'
+import { Card, CardBody, CardHeader, CardTitle, Table } from 'react-bootstrap'
+import type { CategorySales } from '@/features/admin/api/analyticsApi'
 
-const SalesByCategory = () => {
+interface SalesByCategoryProps {
+  categorySales: CategorySales[]
+}
+
+const SalesByCategory = ({ categorySales }: SalesByCategoryProps) => {
+  // Calculate total revenue for percentage calculation
+  const totalRevenue = categorySales.reduce((sum, cat) => sum + cat.totalRevenue, 0)
+  
+  // Prepare chart data
+  const chartSeries = categorySales.slice(0, 4).map((cat) => parseFloat((cat.totalRevenue / 1000).toFixed(2)))
+  const chartLabels = categorySales.slice(0, 4).map((cat) => cat.categoryName || 'Uncategorized')
+  const chartColors = ['#f9b931', '#ff86c8', '#4ecac2', '#7f56da', '#22c55e', '#ef4444']
+
   const chartOptions: ApexOptions = {
     chart: {
       height: 250,
@@ -42,9 +55,9 @@ const SalesByCategory = () => {
         },
       },
     },
-    series: [140, 125, 85, 60],
-    labels: ['Electronics', 'Grocery', 'Clothing', 'Other'],
-    colors: ['#f9b931', '#ff86c8', '#4ecac2', '#7f56da'],
+    series: chartSeries.length > 0 ? chartSeries : [0],
+    labels: chartLabels.length > 0 ? chartLabels : ['No Data'],
+    colors: chartColors,
     dataLabels: {
       enabled: false,
     },
@@ -53,17 +66,6 @@ const SalesByCategory = () => {
     <Card>
       <CardHeader className="d-flex justify-content-between align-items-center">
         <CardTitle>Sales By Category</CardTitle>
-        <Dropdown>
-          <DropdownToggle as={'a'} role="button" className="arrow-none card-drop">
-            <IconifyIcon icon="iconamoon:menu-kebab-vertical-circle-duotone" className="fs-20 align-middle text-muted" />
-          </DropdownToggle>
-          <DropdownMenu className="dropdown-menu-end">
-            <DropdownItem href="">Sales Report</DropdownItem>
-            <DropdownItem href="">Export Report</DropdownItem>
-            <DropdownItem href="">Profit</DropdownItem>
-            <DropdownItem href="">Action</DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
       </CardHeader>
       <CardBody>
         <div dir="ltr">
@@ -79,30 +81,24 @@ const SalesByCategory = () => {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Grocery</td>
-                <td>187,232</td>
-                <td>
-                  48.63%&nbsp;
-                  <span className="badge badge-soft-success ms-1">2.5% Up</span>
-                </td>
-              </tr>
-              <tr>
-                <td>Electonics</td>
-                <td>126,874</td>
-                <td>
-                  36.08%&nbsp;
-                  <span className="badge badge-soft-success ms-1">8.5% Up</span>
-                </td>
-              </tr>
-              <tr>
-                <td>Other</td>
-                <td>90,127</td>
-                <td>
-                  23.41%&nbsp;
-                  <span className="badge badge-soft-danger ms-1">10.98% Down</span>
-                </td>
-              </tr>
+              {categorySales.length > 0 ? (
+                categorySales.slice(0, 3).map((cat, idx) => {
+                  const percentage = totalRevenue > 0 ? ((cat.totalRevenue / totalRevenue) * 100).toFixed(2) : '0.00'
+                  return (
+                    <tr key={idx}>
+                      <td>{cat.categoryName || 'Uncategorized'}</td>
+                      <td>{cat.totalOrders.toLocaleString()}</td>
+                      <td>
+                        {percentage}%
+                      </td>
+                    </tr>
+                  )
+                })
+              ) : (
+                <tr>
+                  <td colSpan={3} className="text-center text-muted">No category sales data available</td>
+                </tr>
+              )}
             </tbody>
           </Table>
         </div>

@@ -10,6 +10,7 @@ const Sales = lazy(() => import('@/app/(admin)/dashboard/sales/page'))
 const EcommerceProducts = lazy(() => import('@/app/(admin)/ecommerce/products/NewProducts'))
 const EcommerceProductDetails = lazy(() => import('@/app/(admin)/ecommerce/products/[productId]/page'))
 const EcommerceProductCreate = lazy(() => import('@/app/(admin)/ecommerce/products/create/page'))
+const EcommerceProductEdit = lazy(() => import('@/app/(admin)/ecommerce/products/[productId]/edit/page'))
 const EcommerceCategories = lazy(() => import('@/app/(admin)/ecommerce/categories/NewCategories'))
 const EcommerceCustomers = lazy(() => import('@/app/(admin)/ecommerce/customers/NewCustomers'))
 const EcommerceStaff = lazy(() => import('@/app/(admin)/ecommerce/customers/NewStaff'))
@@ -17,6 +18,16 @@ const EcommerceOrders = lazy(() => import('@/app/(admin)/ecommerce/orders/NewOrd
 const EcommerceOrderDetails = lazy(() => import('@/app/(admin)/ecommerce/orders/[orderId]/NewOrderDetail'))
 const EcommerceInventory = lazy(() => import('@/app/(admin)/ecommerce/inventory/NewInventory'))
 const ProductVariantsStock = lazy(() => import('@/app/(admin)/ecommerce/inventory/products/[productId]/variants/page'))
+const Testimonials = lazy(() => import('@/app/(admin)/ecommerce/testimonials/page'))
+const BannerCollections = lazy(() => import('@/app/(admin)/ecommerce/banner-collections/page'))
+const BannerCountdowns = lazy(() => import('@/app/(admin)/ecommerce/banner-countdowns/page'))
+const Blogs = lazy(() => import('@/app/(admin)/ecommerce/blogs/page'))
+const BlogCreate = lazy(() => import('@/app/(admin)/ecommerce/blogs/create/page'))
+const BlogEdit = lazy(() => import('@/app/(admin)/ecommerce/blogs/[blogId]/edit/page'))
+const Comments = lazy(() => import('@/app/(admin)/ecommerce/comments/page'))
+const StaticPages = lazy(() => import('@/app/(admin)/ecommerce/static-pages/page'))
+const StaticPageCreate = lazy(() => import('@/app/(admin)/ecommerce/static-pages/create/page'))
+const StaticPageEdit = lazy(() => import('@/app/(admin)/ecommerce/static-pages/[pageId]/edit/page'))
 const Chat = lazy(() => import('@/app/(admin)/apps/chat/page'))
 const Email = lazy(() => import('@/app/(admin)/apps/email/page'))
 const Todo = lazy(() => import('@/app/(admin)/apps/todo/page'))
@@ -110,7 +121,7 @@ const initialRoutes: RoutesProps[] = [
   {
     path: '/',
     name: 'root',
-    element: <Navigate to="/dashboard/analytics" />,
+    element: <Navigate to="/dashboard/finance" />,
   },
   {
     path: '*',
@@ -144,14 +155,19 @@ const appsRoutes: RoutesProps[] = [
     element: <EcommerceProducts />,
   },
   {
-    name: 'Product Details',
-    path: '/products/:productId',
-    element: <EcommerceProductDetails />,
-  },
-  {
     name: 'Create Product',
     path: '/products/create',
     element: <EcommerceProductCreate />,
+  },
+  {
+    name: 'Edit Product',
+    path: '/products/:productId/edit',
+    element: <EcommerceProductEdit />,
+  },
+  {
+    name: 'Product Details',
+    path: '/products/:productId',
+    element: <EcommerceProductDetails />,
   },
   {
     name: 'Categories',
@@ -187,6 +203,56 @@ const appsRoutes: RoutesProps[] = [
     name: 'Product Variants Stock',
     path: '/inventory/products/:productId/variants',
     element: <ProductVariantsStock />,
+  },
+  {
+    name: 'Testimonials',
+    path: '/ecommerce/testimonials',
+    element: <Testimonials />,
+  },
+  {
+    name: 'Banner Collections',
+    path: '/ecommerce/banner-collections',
+    element: <BannerCollections />,
+  },
+  {
+    name: 'Banner Countdowns',
+    path: '/ecommerce/banner-countdowns',
+    element: <BannerCountdowns />,
+  },
+  {
+    name: 'Blogs',
+    path: '/ecommerce/blogs',
+    element: <Blogs />,
+  },
+  {
+    name: 'Create Blog',
+    path: '/ecommerce/blogs/create',
+    element: <BlogCreate />,
+  },
+  {
+    name: 'Edit Blog',
+    path: '/ecommerce/blogs/:blogId/edit',
+    element: <BlogEdit />,
+  },
+  {
+    name: 'Comments',
+    path: '/ecommerce/comments',
+    element: <Comments />,
+  },
+  {
+    name: 'Static Pages',
+    path: '/ecommerce/static-pages',
+    element: <StaticPages />,
+  },
+  {
+    name: 'Create Static Page',
+    path: '/ecommerce/static-pages/create',
+    element: <StaticPageCreate />,
+  },
+  {
+    name: 'Edit Static Page',
+    path: '/ecommerce/static-pages/:pageId/edit',
+    element: <StaticPageEdit />,
   },
   {
     name: 'Chat',

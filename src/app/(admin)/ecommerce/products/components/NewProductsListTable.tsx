@@ -1,9 +1,10 @@
-import { type ColumnDef } from '@tanstack/react-table'
+import { useState } from 'react'
 import clsx from 'clsx'
 import { Link } from 'react-router-dom'
 
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { getStockStatus } from '@/utils/other'
+import DeleteProductModal from './DeleteProductModal'
 
 interface ProductVariant {
   sku?: string
@@ -45,106 +46,43 @@ const calculateTotalStock = (product: Product): number => {
   return product.totalStock || product.quantity || 0
 }
 
-const columns: ColumnDef<Product>[] = [
-  {
-    header: 'Product Name',
-    cell: ({
-      row: {
-        original: product,
-      },
-    }) => {
-      const productId = (product.id || product._id) as string | undefined
-      const productName = product.name || product.title || 'N/A'
-      const productDescription = product.description || product.shortDescription || ''
-      const productImage = product.images?.[0] || product.featuredImage || '/images/placeholder.png'
-      
-      if (!productId) {
-        return <div>N/A</div>
-      }
-      
-      return (
-        <div className="d-flex align-items-center">
-          <div className="shrink-0 me-3">
-            <Link to={`/products/${productId}`}>
-              <img src={productImage} alt={productName} className="img-fluid avatar-sm" />
-            </Link>
-          </div>
-          <div className="grow">
-            <h5 className="mt-0 mb-1">
-              <Link to={`/products/${productId}`} className="text-reset">
-                {productName}
-              </Link>
-            </h5>
-            {productDescription && <span className="fs-13">{productDescription}</span>}
-          </div>
-        </div>
-      )
-    },
-  },
-  {
-    header: 'Category',
-    cell: ({ row: { original: product } }) => {
-      return product.category?.name || 'N/A'
-    },
-  },
-  {
-    header: 'Inventory',
-    cell: ({
-      row: {
-        original: product,
-      },
-    }) => {
-      const quantity = calculateTotalStock(product)
-      const stockStatus = getStockStatus(quantity)
-      return (
-        <div className={'text-' + stockStatus.variant}>
-          <IconifyIcon icon="bxs:circle" className={clsx('me-1', 'text-' + stockStatus.variant)} />
-          {stockStatus.text} ({quantity})
-        </div>
-      )
-    },
-  },
-  {
-    header: 'Status',
-    cell: ({ row: { original: product } }) => {
-      const status = product.status || (product.isActive ? 'active' : 'inactive')
-      return (
-        <span className={`badge badge-soft-${status === 'active' ? 'success' : 'secondary'}`}>
-          {status}
-        </span>
-      )
-    },
-  },
-  {
-    header: 'Action',
-    cell: ({ row: { original: product } }) => {
-      const productId = (product.id || product._id) as string | undefined
-      if (!productId) {
-        return <div>N/A</div>
-      }
-      return (
-        <>
-          <Link to={`/products/${productId}`} className="btn btn-sm btn-soft-secondary me-1">
-            <IconifyIcon icon="bx:edit" className="fs-18" />
-          </Link>
-          <button type="button" className="btn btn-sm btn-soft-danger">
-            <IconifyIcon icon="bx:trash" className="fs-18" />
-          </button>
-        </>
-      )
-    },
-  },
-]
+interface NewProductsListTableProps {
+  products: Product[]
+  onProductDeleted?: () => void
+}
 
-const NewProductsListTable = ({ products }: { products: Product[] }) => {
+const NewProductsListTable = ({ products, onProductDeleted }: NewProductsListTableProps) => {
+  const [deleteModalShow, setDeleteModalShow] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<{ id: string; name: string } | null>(null)
+
+  const handleDeleteClick = (productId: string, productName: string) => {
+    setSelectedProduct({ id: productId, name: productName })
+    setDeleteModalShow(true)
+  }
+
+  const handleDeleteSuccess = () => {
+    if (onProductDeleted) {
+      onProductDeleted()
+    }
+    setSelectedProduct(null)
+  }
+
+  const handleModalClose = () => {
+    setDeleteModalShow(false)
+    setSelectedProduct(null)
+  }
+
   return (
-    <div className="table-responsive">
+    <>
+      <div className="table-responsive">
       <table className="table text-nowrap mb-0">
         <thead className="bg-light bg-opacity-50">
           <tr>
-            {columns.map((column, idx) => (
-              <th key={idx}>{typeof column.header === 'string' ? column.header : 'Header'}</th>
-            ))}
+            <th>Product Name</th>
+            <th>Category</th>
+            <th>Inventory</th>
+            <th>Status</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -193,10 +131,14 @@ const NewProductsListTable = ({ products }: { products: Product[] }) => {
                   </span>
                 </td>
                 <td>
-                  <Link to={`/products/${productId}`} className="btn btn-sm btn-soft-secondary me-1">
+                  <Link to={`/products/${productId}/edit`} className="btn btn-sm btn-soft-secondary me-1">
                     <IconifyIcon icon="bx:edit" className="fs-18" />
                   </Link>
-                  <button type="button" className="btn btn-sm btn-soft-danger">
+                  <button 
+                    type="button" 
+                    className="btn btn-sm btn-soft-danger"
+                    onClick={() => handleDeleteClick(productId, productName)}
+                  >
                     <IconifyIcon icon="bx:trash" className="fs-18" />
                   </button>
                 </td>
@@ -205,7 +147,16 @@ const NewProductsListTable = ({ products }: { products: Product[] }) => {
           })}
         </tbody>
       </table>
-    </div>
+      </div>
+
+      <DeleteProductModal
+        show={deleteModalShow}
+        onHide={handleModalClose}
+        productId={selectedProduct?.id || null}
+        productName={selectedProduct?.name || ''}
+        onSuccess={handleDeleteSuccess}
+      />
+    </>
   )
 }
 

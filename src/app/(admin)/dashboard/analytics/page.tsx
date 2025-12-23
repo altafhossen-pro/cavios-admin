@@ -4,7 +4,7 @@ import PageBreadcrumb from '@/components/layout/PageBreadcrumb'
 import PageMetaData from '@/components/PageTitle'
 import Conversions from './components/Conversions'
 import SessionByBrowser from './components/SessionByBrowser'
-import SessionsByCountry from './components/SessionsByCountry'
+// import SessionsByCountry from './components/SessionsByCountry'
 import Stats from './components/Stats'
 import TopPages from './components/TopPages'
 
@@ -22,11 +22,11 @@ export default function Home() {
           <Conversions />
         </Col>
       </Row>
-      <Row>
+      {/* <Row>
         <Col xs={12}>
           <SessionsByCountry />
         </Col>
-      </Row>
+      </Row> */}
       <Row>
         <Col lg={4}>
           <SessionByBrowser />

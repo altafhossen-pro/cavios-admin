@@ -118,6 +118,7 @@ export interface UpdateUserRequest {
   address?: string;
   status?: string;
   role?: string;
+  roleId?: string | null;
 }
 
 export interface ApiResponse<T> {
@@ -191,6 +192,43 @@ export const deleteUser = async (userId: string): Promise<ApiResponse<null>> => 
     return {
       success: false,
       message: err.response?.data?.message || err.message || 'Failed to delete user',
+    };
+  }
+};
+
+/**
+ * Create staff member
+ * @param {CreateStaffRequest} staffData - Staff data
+ * @returns {Promise<ApiResponse<User>>} API response with created staff
+ */
+export interface CreateStaffRequest {
+  name: string;
+  email: string;
+  password: string;
+  phone?: string;
+  address?: string;
+  roleId?: string;
+  status?: string;
+}
+
+export const createStaff = async (staffData: CreateStaffRequest): Promise<ApiResponse<User>> => {
+  try {
+    const response = await httpClient.post('/admin/user', {
+      ...staffData,
+      role: 'admin', // Set role to admin for staff
+      status: staffData.status || 'active',
+    });
+    return {
+      success: response.data.success,
+      data: response.data.data,
+      message: response.data.message,
+    };
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } }; message?: string }
+    console.error('Error creating staff:', error);
+    return {
+      success: false,
+      message: err.response?.data?.message || err.message || 'Failed to create staff',
     };
   }
 };

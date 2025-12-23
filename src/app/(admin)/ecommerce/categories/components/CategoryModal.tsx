@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Modal, Form, Button, Alert } from 'react-bootstrap'
 import { useNotificationContext } from '@/context/useNotificationContext'
+import IconifyIcon from '@/components/wrappers/IconifyIcon'
+import Preloader from '@/components/Preloader'
 import {
   Category,
   createCategory,
@@ -10,6 +12,7 @@ import {
   CreateCategoryRequest,
   UpdateCategoryRequest,
 } from '@/features/admin/api/categoryApi'
+import { uploadSingleImage } from '@/features/admin/api/uploadApi'
 
 interface CategoryModalProps {
   show: boolean
@@ -22,6 +25,7 @@ const CategoryModal = ({ show, onHide, onSuccess, category }: CategoryModalProps
   const { showNotification } = useNotificationContext()
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [parentCategories, setParentCategories] = useState<Category[]>([])
   const [formData, setFormData] = useState<CreateCategoryRequest>({
     name: '',
@@ -98,6 +102,59 @@ const CategoryModal = ({ show, onHide, onSuccess, category }: CategoryModalProps
       name,
       // Auto-generate slug if slug is empty or matches the old name's slug
       slug: prev.slug === '' || prev.slug === generateSlug(prev.name) ? generateSlug(name) : prev.slug,
+    }))
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showNotification({
+        message: 'Please select a valid image file',
+        variant: 'danger',
+      })
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showNotification({
+        message: 'Image size should be less than 5MB',
+        variant: 'danger',
+      })
+      return
+    }
+
+    setUploading(true)
+    try {
+      const response = await uploadSingleImage(file)
+      setFormData((prev) => ({
+        ...prev,
+        image: response.data.url,
+      }))
+      showNotification({
+        message: 'Image uploaded successfully',
+        variant: 'success',
+      })
+    } catch (error: unknown) {
+      const err = error as { message?: string }
+      showNotification({
+        message: err.message || 'Failed to upload image',
+        variant: 'danger',
+      })
+    } finally {
+      setUploading(false)
+      // Reset input so same file can be selected again
+      e.target.value = ''
+    }
+  }
+
+  const handleRemoveImage = () => {
+    setFormData((prev) => ({
+      ...prev,
+      image: '',
     }))
   }
 
@@ -206,27 +263,49 @@ const CategoryModal = ({ show, onHide, onSuccess, category }: CategoryModalProps
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>Image URL</Form.Label>
-            <Form.Control
-              type="url"
-              name="image"
-              value={formData.image || ''}
-              onChange={handleChange}
-              placeholder="https://example.com/image.jpg"
-            />
-            {formData.image && (
-              <div className="mt-2">
-                <img
-                  src={formData.image}
-                  alt="Category preview"
-                  style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'cover' }}
-                  className="img-thumbnail"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none'
-                  }}
-                />
-              </div>
-            )}
+            <Form.Label>Category Image</Form.Label>
+            <div>
+              <Form.Control
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={uploading}
+                className="mb-2"
+              />
+              <Form.Text className="text-muted d-block mb-2">
+                Upload an image for this category (Max size: 5MB, Supported formats: JPG, PNG, GIF, WebP)
+              </Form.Text>
+              {uploading && (
+                <div className="d-flex align-items-center text-primary mb-2">
+                  <span className="me-2">
+                    <Preloader />
+                  </span>
+                  <span>Uploading image...</span>
+                </div>
+              )}
+              {formData.image && (
+                <div className="mt-2 position-relative d-inline-block">
+                  <img
+                    src={formData.image}
+                    alt="Category preview"
+                    style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'cover' }}
+                    className="img-thumbnail"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-danger position-absolute top-0 end-0 m-1"
+                    onClick={handleRemoveImage}
+                    style={{ borderRadius: '50%', width: '24px', height: '24px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    title="Remove image"
+                  >
+                    <IconifyIcon icon="bx:x" className="fs-14" />
+                  </button>
+                </div>
+              )}
+            </div>
           </Form.Group>
 
           <Form.Group className="mb-3">

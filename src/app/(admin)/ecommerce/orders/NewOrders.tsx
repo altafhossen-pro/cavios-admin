@@ -8,6 +8,7 @@ import PageMetaData from '@/components/PageTitle'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { getAdminOrders } from '@/features/admin/api/orderApi'
 import Preloader from '@/components/Preloader'
+import { currency } from '@/context/constants'
 
 interface Order {
   _id: string
@@ -334,7 +335,10 @@ const NewOrders = () => {
                               </span>
                             </div>
                           </td>
-                          <td className="fw-semibold">${order.total?.toFixed(2) || '0.00'}</td>
+                          <td className="fw-semibold">
+                            {currency}
+                            {((order.total || 0) - (order.shippingCost || 0)).toFixed(2)}
+                          </td>
                           <td>
                             <Link
                               to={`/ecommerce/orders/${order._id}`}

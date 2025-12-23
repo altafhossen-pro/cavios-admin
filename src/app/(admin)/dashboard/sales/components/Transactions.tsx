@@ -1,26 +1,31 @@
-import { useEffect, useState } from 'react'
 import { Button, Card, CardBody, CardHeader, CardTitle } from 'react-bootstrap'
+import { Link } from 'react-router-dom'
 
 import { currency } from '@/context/constants'
-import { getAllTransactions } from '@/helpers/data'
-import type { TransactionType } from '@/types/data'
 
-const Transactions = () => {
-  const [transactionsData, setTransactionsData] = useState<TransactionType[]>()
+interface Transaction {
+  id: string
+  date: string
+  amount: string
+  status: 'Cr' | 'Dr'
+  description: string
+}
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await getAllTransactions()
-      setTransactionsData(data)
-    }
-    fetchData()
-  }, [])
+interface TransactionsProps {
+  transactions: Transaction[]
+}
+
+const Transactions = ({ transactions }: TransactionsProps) => {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  }
 
   return (
     <Card>
       <CardHeader className="d-flex justify-content-between align-items-center">
         <CardTitle>Recent Transactions</CardTitle>
-        <Button variant="light" size="sm">
+        <Button variant="light" size="sm" as={Link} to="/ecommerce/orders">
           View All
         </Button>
       </CardHeader>
@@ -37,20 +42,28 @@ const Transactions = () => {
               </tr>
             </thead>
             <tbody>
-              {transactionsData?.slice(0, 5).map((transaction, idx) => (
-                <tr key={idx}>
-                  <td>#{transaction.id}</td>
-                  <td>{new Date(transaction.date).toDateString()}</td>
-                  <td>
-                    {currency}
-                    {transaction.amount}
-                  </td>
-                  <td>
-                    <span className={`badge bg-${transaction.status === 'Dr.' ? 'danger' : 'success'}`}>{transaction.status}</span>
-                  </td>
-                  <td>{transaction.description}</td>
+              {transactions.length > 0 ? (
+                transactions.slice(0, 5).map((transaction, idx) => (
+                  <tr key={transaction.id || idx}>
+                    <td>{transaction.id}</td>
+                    <td>{formatDate(transaction.date)}</td>
+                    <td>
+                      {currency}
+                      {transaction.amount}
+                    </td>
+                    <td>
+                      <span className={`badge bg-${transaction.status === 'Dr' ? 'danger' : 'success'}`}>
+                        {transaction.status}
+                      </span>
+                    </td>
+                    <td>{transaction.description}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="text-center text-muted">No transactions found</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

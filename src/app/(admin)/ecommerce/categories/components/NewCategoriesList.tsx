@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { Table, Badge, Button, Pagination } from 'react-bootstrap'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { Category } from '@/features/admin/api/categoryApi'
+import DeleteCategoryModal from './DeleteCategoryModal'
 
 interface NewCategoriesListProps {
   categories: Category[]
@@ -21,12 +23,33 @@ const NewCategoriesList = ({
   pagination,
   onPageChange,
   onEdit,
+  onRefresh,
   loading = false,
 }: NewCategoriesListProps) => {
+  const [deleteModalShow, setDeleteModalShow] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<{ id: string; name: string } | null>(null)
+
   const getParentName = (parent: string | Category | undefined): string => {
     if (!parent) return '-'
     if (typeof parent === 'string') return parent
     return parent.name || '-'
+  }
+
+  const handleDeleteClick = (categoryId: string, categoryName: string) => {
+    setSelectedCategory({ id: categoryId, name: categoryName })
+    setDeleteModalShow(true)
+  }
+
+  const handleDeleteSuccess = () => {
+    if (onRefresh) {
+      onRefresh()
+    }
+    setSelectedCategory(null)
+  }
+
+  const handleModalClose = () => {
+    setDeleteModalShow(false)
+    setSelectedCategory(null)
   }
 
   if (categories.length === 0 && !loading) {
@@ -97,6 +120,14 @@ const NewCategoriesList = ({
                       <IconifyIcon icon="bx:edit" className="me-1" />
                       Edit
                     </Button>
+                    <Button
+                      variant="soft-danger"
+                      size="sm"
+                      onClick={() => handleDeleteClick(category._id, category.name)}
+                    >
+                      <IconifyIcon icon="bx:trash" className="me-1" />
+                      Delete
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -155,6 +186,14 @@ const NewCategoriesList = ({
           </Pagination>
         </div>
       )}
+
+      <DeleteCategoryModal
+        show={deleteModalShow}
+        onHide={handleModalClose}
+        categoryId={selectedCategory?.id || null}
+        categoryName={selectedCategory?.name || ''}
+        onSuccess={handleDeleteSuccess}
+      />
     </>
   )
 }

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Card, CardBody } from 'react-bootstrap'
+import { Card, CardBody, Button } from 'react-bootstrap'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import Preloader from '@/components/Preloader'
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb'
 import PageMetaData from '@/components/PageTitle'
 import { getStaff, User } from '@/features/admin/api/userApi'
 import NewCustomersList from './components/NewCustomersList'
+import CreateStaffModal from './components/CreateStaffModal'
 
 const NewStaff = () => {
   const [staff, setStaff] = useState<User[]>([])
@@ -13,6 +14,7 @@ const NewStaff = () => {
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState('')
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
@@ -60,6 +62,19 @@ const NewStaff = () => {
     fetchData(currentPage, searchQuery)
   }
 
+  const handleCreate = () => {
+    setShowCreateModal(true)
+  }
+
+  const handleCreateSuccess = () => {
+    setShowCreateModal(false)
+    fetchData(currentPage, searchQuery)
+  }
+
+  const handleCreateModalClose = () => {
+    setShowCreateModal(false)
+  }
+
   return (
     <>
       <PageBreadcrumb title="Staff" subName="Ecommerce" />
@@ -81,6 +96,10 @@ const NewStaff = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </form>
+            <Button variant="primary" onClick={handleCreate}>
+              <IconifyIcon icon="bx:user-plus" className="me-1" />
+              Create Staff
+            </Button>
           </div>
         </CardBody>
       </Card>
@@ -109,9 +128,17 @@ const NewStaff = () => {
           type="staff"
         />
       )}
+
+      <CreateStaffModal
+        show={showCreateModal}
+        onHide={handleCreateModalClose}
+        onSuccess={handleCreateSuccess}
+      />
     </>
   )
 }
+
+NewStaff.displayName = 'NewStaff'
 
 export default NewStaff
 

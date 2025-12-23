@@ -156,7 +156,7 @@ const NewProducts = () => {
             ) : (
               <>
                 <div>
-                  <NewProductsListTable products={productsList} />
+                  <NewProductsListTable products={productsList} onProductDeleted={() => fetchProducts(currentPage, searchQuery)} />
                 </div>
                 {pagination.totalPages > 1 && (
                   <div className="d-flex justify-content-between align-items-center p-3 border-top">

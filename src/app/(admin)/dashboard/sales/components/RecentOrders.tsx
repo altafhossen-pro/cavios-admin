@@ -1,22 +1,61 @@
 import clsx from 'clsx'
-import { useEffect, useState } from 'react'
-import { Button, Card, CardBody, CardTitle, Col } from 'react-bootstrap'
+import { Button, Card, CardBody, CardTitle } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
-import { getAllOrders } from '@/helpers/data'
-import type { OrderType } from '@/types/data'
 
-const RecentOrders = () => {
-  const [orders, setOrders] = useState<OrderType[]>()
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await getAllOrders()
-      setOrders(data)
+interface Order {
+  orderId: string
+  _id: string
+  createdAt: string
+  total: number
+  status: string
+  paymentStatus: string
+  paymentMethod?: string
+  user?: {
+    name?: string
+    email?: string
+    phone?: string
+  }
+  items?: Array<{
+    product?: {
+      title?: string
+      featuredImage?: string
     }
-    fetchData()
-  }, [])
+    name?: string
+    image?: string
+  }>
+  shippingAddress?: {
+    street?: string
+    city?: string
+    state?: string
+  }
+}
+
+interface RecentOrdersProps {
+  orders: Order[]
+}
+
+const RecentOrders = ({ orders }: RecentOrdersProps) => {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'cancelled':
+        return 'text-danger'
+      case 'processing':
+      case 'confirmed':
+      case 'shipped':
+        return 'text-primary'
+      case 'delivered':
+        return 'text-success'
+      default:
+        return 'text-warning'
+    }
+  }
 
   return (
     <Card>
@@ -47,38 +86,56 @@ const RecentOrders = () => {
             </tr>
           </thead>
           <tbody>
-            {orders?.slice(0, 5).map((order, idx) => (
-              <tr key={idx}>
-                <td>
-                  <Link to={`/ecommerce/orders/${order.id}`}>{order.id}</Link>
-                </td>
-                <td>{new Date(order.createdAt).toDateString()}</td>
-                {order.product && (
-                  <td>
-                    <img src={order.product?.images[0]} alt="product-1(1)" className="img-fluid avatar-sm" />
-                  </td>
-                )}
-                <td>
-                  <Link to="">{order.customer?.name}</Link>
-                </td>
-                <td>{order.customer?.email}</td>
-                <td>{order.customer?.phone}</td>
-                <td>{order.customer?.address}</td>
-                <td>{order.paymentMethod}</td>
-                <td>
-                  <div className="icons-center">
-                    <IconifyIcon
-                      icon="bxs:circle"
-                      className={clsx(
-                        'me-1',
-                        order.status === 'Cancelled' ? 'text-danger' : order.status == 'Processing' ? 'text-primary' : 'text-success',
+            {orders.length > 0 ? (
+              orders.slice(0, 5).map((order, idx) => {
+                const firstItem = order.items && order.items.length > 0 ? order.items[0] : null
+                const productImage = firstItem?.product?.featuredImage || firstItem?.image
+                const productName = firstItem?.product?.title || firstItem?.name
+                const address = order.shippingAddress
+                  ? `${order.shippingAddress.street || ''}, ${order.shippingAddress.city || ''}, ${order.shippingAddress.state || ''}`.trim()
+                  : 'N/A'
+
+                return (
+                  <tr key={order._id || order.orderId || idx}>
+                    <td>
+                      <Link to={`/ecommerce/orders/${order._id || order.orderId}`}>
+                        {order.orderId || order._id.slice(-8).toUpperCase()}
+                      </Link>
+                    </td>
+                    <td>{formatDate(order.createdAt)}</td>
+                    <td>
+                      {productImage ? (
+                        <img src={productImage} alt={productName || 'product'} className="img-fluid avatar-sm" />
+                      ) : (
+                        <div className="avatar-sm bg-light text-center d-flex align-items-center justify-content-center">
+                          <span className="text-muted small">N/A</span>
+                        </div>
                       )}
-                    />
-                    {order.status}
-                  </div>
-                </td>
+                    </td>
+                    <td>
+                      <Link to={`/customers`}>{order.user?.name || 'Guest'}</Link>
+                    </td>
+                    <td>{order.user?.email || 'N/A'}</td>
+                    <td>{order.user?.phone || 'N/A'}</td>
+                    <td>{address}</td>
+                    <td>{order.paymentMethod?.toUpperCase() || 'N/A'}</td>
+                    <td>
+                      <div className="icons-center">
+                        <IconifyIcon
+                          icon="bxs:circle"
+                          className={clsx('me-1', getStatusColor(order.status))}
+                        />
+                        {order.status || 'N/A'}
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })
+            ) : (
+              <tr>
+                <td colSpan={9} className="text-center text-muted">No recent orders found</td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
@@ -86,39 +143,15 @@ const RecentOrders = () => {
         <div className="col-sm">
           <div className="text-muted">
             Showing &nbsp;
-            <span className="fw-semibold">5</span>&nbsp; of &nbsp;
-            <span className="fw-semibold">90,521</span>&nbsp; orders
+            <span className="fw-semibold">{Math.min(orders.length, 5)}</span>&nbsp; of &nbsp;
+            <span className="fw-semibold">{orders.length}</span>&nbsp; recent orders
           </div>
         </div>
-        <Col sm="auto" className="mt-3 mt-sm-0">
-          <ul className="pagination pagination-rounded m-0">
-            <li className="page-item">
-              <Link to="" className="page-link">
-                <IconifyIcon icon="bx:left-arrow-alt" />
-              </Link>
-            </li>
-            <li className="page-item active">
-              <Link to="" className="page-link">
-                1
-              </Link>
-            </li>
-            <li className="page-item">
-              <Link to="" className="page-link">
-                2
-              </Link>
-            </li>
-            <li className="page-item">
-              <Link to="" className="page-link">
-                3
-              </Link>
-            </li>
-            <li className="page-item">
-              <Link to="" className="page-link">
-                <IconifyIcon icon="bx:right-arrow-alt" />
-              </Link>
-            </li>
-          </ul>
-        </Col>
+        <div className="col-sm-auto mt-3 mt-sm-0">
+          <Button variant="primary" size="sm" as={Link} to="/ecommerce/orders">
+            View All Orders
+          </Button>
+        </div>
       </div>
     </Card>
   )

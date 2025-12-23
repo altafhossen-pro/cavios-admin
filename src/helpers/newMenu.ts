@@ -10,7 +10,26 @@ export const getNewMenuItems = (): MenuItemType[] => {
       key: 'dashboard',
       icon: 'iconamoon:home-duotone',
       label: 'Dashboard',
-      url: '/dashboard/analytics',
+      children: [
+        // {
+        //   key: 'dashboard-analytics',
+        //   label: 'Analytics',
+        //   url: '/dashboard/analytics',
+        //   parentKey: 'dashboard',
+        // },
+        {
+          key: 'dashboard-finance',
+          label: 'Finance',
+          url: '/dashboard/finance',
+          parentKey: 'dashboard',
+        },
+        {
+          key: 'dashboard-sales',
+          label: 'Sales',
+          url: '/dashboard/sales',
+          parentKey: 'dashboard',
+        },
+      ],
     },
     {
       key: 'products',
@@ -56,6 +75,57 @@ export const getNewMenuItems = (): MenuItemType[] => {
       label: 'Inventory',
       url: '/inventory',
     },
+    {
+      key: 'homepage',
+      icon: 'bx:home',
+      label: 'Homepage',
+      children: [
+        {
+          key: 'testimonials',
+          label: 'Testimonials',
+          url: '/ecommerce/testimonials',
+          parentKey: 'homepage',
+        },
+        {
+          key: 'banner-collections',
+          label: 'Banner Collections',
+          url: '/ecommerce/banner-collections',
+          parentKey: 'homepage',
+        },
+        {
+          key: 'banner-countdowns',
+          label: 'Banner Countdowns',
+          url: '/ecommerce/banner-countdowns',
+          parentKey: 'homepage',
+        },
+      ],
+    },
+    {
+      key: 'contents',
+      icon: 'bx:file',
+      label: 'Contents',
+      children: [
+        {
+          key: 'blogs',
+          label: 'Blogs',
+          url: '/ecommerce/blogs',
+          parentKey: 'contents',
+        },
+          {
+            key: 'comments',
+            label: 'Comments',
+            url: '/ecommerce/comments',
+            parentKey: 'contents',
+          },
+          {
+            key: 'static-pages',
+            icon: 'bx:file',
+            label: 'Static Pages',
+            url: '/ecommerce/static-pages',
+            parentKey: 'contents',
+          },
+        ],
+      },
     {
       key: 'users',
       icon: 'iconamoon:profile-circle-duotone',
