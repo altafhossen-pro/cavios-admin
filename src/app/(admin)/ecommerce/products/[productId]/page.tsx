@@ -89,11 +89,11 @@ const ProductDetail = () => {
         
         if (response.success && response.data) {
           // Use backend product data directly for admin panel
-          const backendProduct = response.data as BackendProduct
+          const backendProduct = response.data as unknown as BackendProduct
           setProduct(backendProduct)
         } else {
           navigate('/pages/error-404-alt')
-      }
+        }
       } catch (error) {
         console.error('Error fetching product:', error)
         navigate('/pages/error-404-alt')

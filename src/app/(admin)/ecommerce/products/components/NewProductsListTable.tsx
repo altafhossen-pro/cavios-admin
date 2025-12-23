@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { getStockStatus } from '@/utils/other'
 import DeleteProductModal from './DeleteProductModal'
+import type { Product } from '@/features/admin/api/productApi'
 
 interface ProductVariant {
   sku?: string
@@ -12,31 +13,14 @@ interface ProductVariant {
   [key: string]: unknown
 }
 
-interface Product {
-  _id?: string
-  id?: string
-  title?: string
-  name?: string
-  description?: string
-  shortDescription?: string
-  images?: string[]
-  featuredImage?: string
-  price?: number
-  currentPrice?: number
-  category?: {
-    _id: string
-    name: string
-  }
+// AdminProduct type for table display - compatible with Product but allows simpler variants
+type AdminProduct = Product & {
   variants?: ProductVariant[]
   quantity?: number
-  totalStock?: number
-  status?: string
-  isActive?: boolean
-  [key: string]: unknown
 }
 
 // Helper function to calculate total stock from variants
-const calculateTotalStock = (product: Product): number => {
+const calculateTotalStock = (product: AdminProduct): number => {
   const variants = product.variants || []
   if (variants.length > 0) {
     return variants.reduce((sum: number, variant: ProductVariant) => {
@@ -47,7 +31,7 @@ const calculateTotalStock = (product: Product): number => {
 }
 
 interface NewProductsListTableProps {
-  products: Product[]
+  products: AdminProduct[]
   onProductDeleted?: () => void
 }
 
@@ -88,12 +72,18 @@ const NewProductsListTable = ({ products, onProductDeleted }: NewProductsListTab
         <tbody>
           {products.map((product, idx) => {
             const productId = (product.id || product._id) as string | undefined
-            const productName = product.name || product.title || 'N/A'
-            const productDescription = product.description || product.shortDescription || ''
-            const productImage = product.images?.[0] || product.featuredImage || '/images/placeholder.png'
+            const productName: string = (product.name || product.title || 'N/A') as string
+            const productDescription = (product.description || product.shortDescription || '') as string
+            // Handle images as string array or gallery array
+            const imagesArray = Array.isArray(product.images) 
+              ? (product.images as string[]).length > 0 && typeof product.images[0] === 'string'
+                ? product.images as string[]
+                : []
+              : []
+            const productImage: string = imagesArray[0] || (product.featuredImage as string) || '/images/placeholder.png'
             const quantity = calculateTotalStock(product)
             const stockStatus = getStockStatus(quantity)
-            const status = product.status || (product.isActive ? 'active' : 'inactive')
+            const status = (product.status || (product.isActive ? 'active' : 'inactive')) as string
             
             if (!productId) {
               return null
@@ -118,7 +108,11 @@ const NewProductsListTable = ({ products, onProductDeleted }: NewProductsListTab
                     </div>
                   </div>
                 </td>
-                <td>{product.category?.name || 'N/A'}</td>
+                <td>
+                  {typeof product.category === 'string'
+                    ? 'N/A'
+                    : product.category?.name || 'N/A'}
+                </td>
                 <td>
                   <div className={'text-' + stockStatus.variant}>
                     <IconifyIcon icon="bxs:circle" className={clsx('me-1', 'text-' + stockStatus.variant)} />

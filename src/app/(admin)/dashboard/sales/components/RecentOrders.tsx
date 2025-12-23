@@ -148,7 +148,7 @@ const RecentOrders = ({ orders }: RecentOrdersProps) => {
           </div>
         </div>
         <div className="col-sm-auto mt-3 mt-sm-0">
-          <Button variant="primary" size="sm" as={Link} to="/ecommerce/orders">
+          <Button variant="primary" size="sm" href="/ecommerce/orders">
             View All Orders
           </Button>
         </div>

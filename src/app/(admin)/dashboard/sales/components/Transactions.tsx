@@ -1,5 +1,4 @@
 import { Button, Card, CardBody, CardHeader, CardTitle } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
 
 import { currency } from '@/context/constants'
 
@@ -25,7 +24,7 @@ const Transactions = ({ transactions }: TransactionsProps) => {
     <Card>
       <CardHeader className="d-flex justify-content-between align-items-center">
         <CardTitle>Recent Transactions</CardTitle>
-        <Button variant="light" size="sm" as={Link} to="/ecommerce/orders">
+        <Button variant="light" size="sm" href="/ecommerce/orders">
           View All
         </Button>
       </CardHeader>

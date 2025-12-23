@@ -5,36 +5,12 @@ import { Link } from 'react-router-dom'
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb'
 import PageMetaData from '@/components/PageTitle'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
-import { getAdminProducts } from '@/features/admin/api/productApi'
+import { getAdminProducts, type Product } from '@/features/admin/api/productApi'
 import NewProductsListTable from './components/NewProductsListTable'
 
 interface ProductVariant {
   sku?: string
   stockQuantity?: number
-  [key: string]: unknown
-}
-
-interface Product {
-  _id: string
-  id?: string
-  title: string
-  name?: string
-  slug?: string
-  description?: string
-  shortDescription?: string
-  images?: string[]
-  featuredImage?: string
-  price?: number
-  currentPrice?: number
-  category?: {
-    _id: string
-    name: string
-  }
-  variants?: ProductVariant[]
-  quantity?: number
-  totalStock?: number
-  status?: string
-  isActive?: boolean
   [key: string]: unknown
 }
 
@@ -64,7 +40,7 @@ const NewProducts = () => {
 
       if (response.success) {
         // Transform backend product data to match frontend format
-        const transformedProducts = response.data.map((product: Product) => {
+        const transformedProducts: Product[] = response.data.map((product: Product) => {
           // Calculate total stock from variants
           const variants = product.variants || []
           const totalVariantStock = variants.reduce((sum: number, variant: ProductVariant) => {
@@ -88,9 +64,10 @@ const NewProducts = () => {
         setError(response.message || 'Failed to fetch products')
         setProductsList([])
       }
-    } catch (err: any) {
-      console.error('Error fetching products:', err)
-      setError(err.message || 'An error occurred while fetching products')
+    } catch (err: unknown) {
+      const error = err as { message?: string }
+      console.error('Error fetching products:', error)
+      setError(error.message || 'An error occurred while fetching products')
       setProductsList([])
     } finally {
       setLoading(false)
@@ -99,7 +76,7 @@ const NewProducts = () => {
 
   useEffect(() => {
     fetchProducts(currentPage, searchQuery)
-  }, [currentPage])
+  }, [currentPage, searchQuery])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()

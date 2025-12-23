@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Card, CardBody, Row, Col, Form, InputGroup, Button, Badge } from 'react-bootstrap'
+import { Card, CardBody, Row, Col, Form, InputGroup, Button } from 'react-bootstrap'
 import PageMetaData from '@/components/PageTitle'
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb'
 import Preloader from '@/components/Preloader'

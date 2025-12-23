@@ -93,11 +93,7 @@ const BannerCountdownsPage = () => {
   return (
     <>
       <PageMetaData title="Banner Countdowns" />
-      <PageBreadcrumb
-        title="Banner Countdowns"
-        subName="Ecommerce"
-        pageTitle="Banner Countdowns Management"
-      />
+      <PageBreadcrumb title="Banner Countdowns" subName="Ecommerce" />
       <Card>
         <CardBody>
           <div className="d-flex justify-content-between align-items-center mb-4">

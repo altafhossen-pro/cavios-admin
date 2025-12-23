@@ -93,11 +93,7 @@ const BannerCollectionsPage = () => {
   return (
     <>
       <PageMetaData title="Banner Collections" />
-      <PageBreadcrumb
-        title="Banner Collections"
-        subName="Ecommerce"
-        pageTitle="Banner Collections Management"
-      />
+      <PageBreadcrumb title="Banner Collections" subName="Ecommerce" />
       <Card>
         <CardBody>
           <div className="d-flex justify-content-between align-items-center mb-4">

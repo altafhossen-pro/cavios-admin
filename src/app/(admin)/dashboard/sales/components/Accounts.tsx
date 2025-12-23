@@ -1,5 +1,4 @@
 import { Button, Card, CardBody, CardHeader, CardTitle } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
 
 interface RecentUser {
   _id: string
@@ -32,7 +31,7 @@ const Accounts = ({ recentUsers }: AccountsProps) => {
     <Card>
       <CardHeader className="d-flex justify-content-between align-items-center">
         <CardTitle>New Accounts</CardTitle>
-        <Button variant="light" size="sm" as={Link} to="/customers">
+        <Button variant="light" size="sm" href="/customers">
           View All
         </Button>
       </CardHeader>

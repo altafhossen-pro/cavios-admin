@@ -86,12 +86,6 @@ const BlogsList = ({
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
   }
 
-  const stripHtml = (html: string) => {
-    const tmp = document.createElement('DIV')
-    tmp.innerHTML = html
-    return tmp.textContent || tmp.innerText || ''
-  }
-
   if (blogs.length === 0 && !loading) {
     return (
       <div className="text-center py-5">

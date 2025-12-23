@@ -93,11 +93,7 @@ const TestimonialsPage = () => {
   return (
     <>
       <PageMetaData title="Testimonials" />
-      <PageBreadcrumb
-        title="Testimonials"
-        subName="Ecommerce"
-        pageTitle="Testimonials Management"
-      />
+      <PageBreadcrumb title="Testimonials" subName="Ecommerce" />
       <Card>
         <CardBody>
           <div className="d-flex justify-content-between align-items-center mb-4">

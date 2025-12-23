@@ -206,7 +206,25 @@ export interface CreateProductRequest {
 }
 
 // Product type based on backend response (extends CreateProductRequest with additional fields)
-export interface Product extends CreateProductRequest {
+// Use Omit to exclude category and variants from CreateProductRequest, then add them back with flexible types
+export interface Product extends Omit<CreateProductRequest, 'category' | 'variants'> {
+  // In responses, category may be returned as an ID string or a populated object
+  category: string | {
+    _id: string;
+    name: string;
+    slug?: string;
+    image?: string;
+  };
+  // Variants can be the full variant type or a simplified version from backend
+  variants?: CreateProductRequest['variants'] | Array<{
+    sku?: string;
+    stockQuantity?: number;
+    currentPrice?: number;
+    [key: string]: unknown;
+  }>;
+  // Images can be string array or gallery array
+  images?: string[] | CreateProductRequest['gallery'];
+  name?: string;
   _id?: string;
   id?: string;
   createdAt?: string;

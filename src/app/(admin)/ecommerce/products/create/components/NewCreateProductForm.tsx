@@ -195,11 +195,17 @@ const NewCreateProductForm = () => {
 
       const response = await createProduct(productData)
 
-      if (response.success) {
-        setSuccess(true)
-        setTimeout(() => {
-          navigate(`/products/${response.data._id || response.data.id}`)
-        }, 2000)
+      if (response.success && response.data) {
+        const productId = response.data._id || response.data.id
+
+        if (productId) {
+          setSuccess(true)
+          setTimeout(() => {
+            navigate(`/products/${productId}`)
+          }, 2000)
+        } else {
+          setError('Product created but no ID returned')
+        }
       } else {
         setError(response.message || 'Failed to create product')
       }

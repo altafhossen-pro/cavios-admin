@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Table, Button, Badge, Pagination, Modal, Form, Alert } from 'react-bootstrap'
+import { Table, Button, Badge, Pagination, Modal, Alert } from 'react-bootstrap'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { useNotificationContext } from '@/context/useNotificationContext'
 import { toggleCommentApproval, deleteComment, BlogComment } from '@/features/admin/api/blogCommentApi'
