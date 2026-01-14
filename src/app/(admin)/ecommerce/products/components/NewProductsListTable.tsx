@@ -104,7 +104,13 @@ const NewProductsListTable = ({ products, onProductDeleted }: NewProductsListTab
                           {productName}
                         </Link>
                       </h5>
-                      {productDescription && <span className="fs-13">{productDescription}</span>}
+                      {productDescription && (
+                        <span className="fs-13">
+                          {productDescription.length > 100 
+                            ? `${productDescription.substring(0, 100)}...` 
+                            : productDescription}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </td>

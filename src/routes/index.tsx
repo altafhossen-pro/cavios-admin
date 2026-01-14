@@ -33,8 +33,7 @@ const Email = lazy(() => import('@/app/(admin)/apps/email/page'))
 const Todo = lazy(() => import('@/app/(admin)/apps/todo/page'))
 const Social = lazy(() => import('@/app/(admin)/apps/social/page'))
 const Contacts = lazy(() => import('@/app/(admin)/apps/contacts/page'))
-const Invoices = lazy(() => import('@/app/(admin)/invoices/page'))
-const InvoiceDetails = lazy(() => import('@/app/(admin)/invoices/[invoiceId]/page'))
+const InvoiceDetails = lazy(() => import('@/app/(admin)/invoices/[orderId]/page'))
 
 // Pages Routes
 const Profile = lazy(() => import('@/app/(admin)/pages/profile/page'))
@@ -280,13 +279,8 @@ const appsRoutes: RoutesProps[] = [
     element: <Contacts />,
   },
   {
-    name: 'Invoices List',
-    path: '/invoices',
-    element: <Invoices />,
-  },
-  {
-    name: 'Invoices Details',
-    path: '/invoices/:invoiceId',
+    name: 'Invoice Details',
+    path: '/invoices/:orderId',
     element: <InvoiceDetails />,
   },
 ]

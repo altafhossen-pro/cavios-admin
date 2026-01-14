@@ -161,13 +161,13 @@ const NewOrders = () => {
   }
 
 
-  const getFirstProductImage = (order: Order) => {
+  const getFirstProductImage = (order: Order): string | null => {
     if (order.items && order.items.length > 0) {
       const firstItem = order.items[0]
       if (firstItem.image) return firstItem.image
       if (firstItem.product?.featuredImage) return firstItem.product.featuredImage
     }
-    return '/images/placeholder.png'
+    return null
   }
 
   if (loading && orders.length === 0) {
@@ -307,14 +307,20 @@ const NewOrders = () => {
                             })}
                           </td>
                           <td>
-                            <img
-                              src={getFirstProductImage(order)}
-                              alt="product"
-                              className="img-fluid avatar-sm"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = '/images/placeholder.png'
-                              }}
-                            />
+                            {(() => {
+                              const imageUrl = getFirstProductImage(order)
+                              return imageUrl ? (
+                                <img
+                                  src={imageUrl}
+                                  alt="product"
+                                  className="img-fluid avatar-sm"
+                                />
+                              ) : (
+                                <div className="d-flex align-items-center justify-content-center avatar-sm bg-light text-muted small" style={{ minWidth: '40px', minHeight: '40px', borderRadius: '4px' }}>
+                                  <span className="text-center">No featured image</span>
+                                </div>
+                              )
+                            })()}
                           </td>
                           <td>{getCustomerEmail(order)}</td>
                           <td>{getCustomerPhone(order)}</td>

@@ -153,25 +153,6 @@ export const MENU_ITEMS: MenuItemType[] = [
   //   url: '/apps/contacts',
   // },
   {
-    key: 'apps-invoices',
-    icon: 'iconamoon:invoice-duotone',
-    label: 'Invoices',
-    children: [
-      {
-        key: 'invoices',
-        label: 'Invoices List',
-        url: '/invoices',
-        parentKey: 'apps-invoices',
-      },
-      {
-        key: 'invoices-details',
-        label: 'Invoices Details',
-        url: '/invoices/RB6985',
-        parentKey: 'apps-invoices',
-      },
-    ],
-  },
-  {
     key: 'custom',
     label: 'Custom',
     isTitle: true,

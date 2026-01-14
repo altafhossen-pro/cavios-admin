@@ -230,12 +230,11 @@ const NewOrderDetail = () => {
               <Button
                 variant="outline-primary"
                 onClick={() => {
-                  // TODO: Implement invoice download when backend API is ready
-                  showNotification({ message: 'Invoice download feature coming soon', variant: 'info' })
+                  navigate(`/invoices/${order._id}`)
                 }}
               >
-                <IconifyIcon icon="bx:download" className="me-1" />
-                Download Invoice
+                <IconifyIcon icon="bx:file" className="me-1" />
+                View Invoice
               </Button>
             </div>
           </div>

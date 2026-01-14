@@ -80,11 +80,23 @@ const Orders = () => {
                             <Link to={`/ecommerce/orders/${order.id}`}>{order.id}</Link>
                           </td>
                           <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                          {order.product && (
-                            <td>
-                              <img src={order.product?.images[0]} alt="product-1(1)" className="img-fluid avatar-sm" />
-                            </td>
-                          )}
+                          <td>
+                            {(() => {
+                              const product = order.product
+                              const imageUrl = product?.images?.[0] || (product as { featuredImage?: string })?.featuredImage
+                              return imageUrl ? (
+                                <img 
+                                  src={imageUrl} 
+                                  alt={product?.name || 'product'} 
+                                  className="img-fluid avatar-sm" 
+                                />
+                              ) : (
+                                <div className="d-flex align-items-center justify-content-center avatar-sm bg-light text-muted small" style={{ minWidth: '40px', minHeight: '40px', borderRadius: '4px' }}>
+                                  <span className="text-center">No featured image</span>
+                                </div>
+                              )
+                            })()}
+                          </td>
                           <td>
                             <Link to="">{order.customer?.name}</Link>
                           </td>

@@ -29,7 +29,11 @@ const columns: ColumnDef<EcommerceProductType>[] = [
               {name}
             </Link>
           </h5>
-          <span className="fs-13">{description}</span>
+          <span className="fs-13">
+            {description && description.length > 100 
+              ? `${description.substring(0, 100)}...` 
+              : description}
+          </span>
         </div>
       </div>
     ),
