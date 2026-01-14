@@ -285,14 +285,24 @@ const EditProductForm = () => {
       if (data.variants.length > 0) {
         productData.variants = data.variants.map((variant: ProductFormData['variants'][0]) => ({
           sku: variant.sku,
+          barcode: variant.barcode,
           attributes: variant.attributes,
           currentPrice: variant.currentPrice,
           originalPrice: variant.originalPrice,
+          costPrice: variant.costPrice,
+          stockQuantity: variant.stockQuantity ?? 0,
+          lowStockThreshold: variant.lowStockThreshold,
+          stockStatus: variant.stockStatus as 'in_stock' | 'out_of_stock' | 'low_stock' | 'pre_order' | undefined,
           weight: variant.weight,
           dimensions: variant.dimensions,
           images: variant.images,
           isActive: true,
         }))
+      }
+
+      // Include totalStock if it exists (for products without variants)
+      if (data.totalStock !== undefined) {
+        productData.totalStock = data.totalStock
       }
 
       // Add additional info
