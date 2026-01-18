@@ -4,18 +4,20 @@ import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { searchUsers, type User } from '@/features/admin/api/userApi'
 import { getCustomerInfoByPhone } from '@/features/admin/api/orderApi'
 
+type GuestInfo = {
+  name: string
+  phone: string
+  email: string
+  address: string
+}
+
 interface UserInfoSectionProps {
   orderType: 'existing' | 'guest'
   onOrderTypeChange: (type: 'existing' | 'guest') => void
   selectedUserId: string
   onUserIdChange: (id: string) => void
-  guestInfo: {
-    name: string
-    phone: string
-    email: string
-    address: string
-  }
-  onGuestInfoChange: (info: typeof guestInfo) => void
+  guestInfo: GuestInfo
+  onGuestInfoChange: (info: GuestInfo) => void
   deliveryAddress: string
   onDeliveryAddressChange: (address: string) => void
 }
@@ -23,7 +25,7 @@ interface UserInfoSectionProps {
 const UserInfoSection = ({
   orderType,
   onOrderTypeChange,
-  selectedUserId,
+  selectedUserId: _selectedUserId,
   onUserIdChange,
   guestInfo,
   onGuestInfoChange,
