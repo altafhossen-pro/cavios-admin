@@ -16,6 +16,7 @@ const EcommerceCustomers = lazy(() => import('@/app/(admin)/ecommerce/customers/
 const EcommerceStaff = lazy(() => import('@/app/(admin)/ecommerce/customers/NewStaff'))
 const EcommerceOrders = lazy(() => import('@/app/(admin)/ecommerce/orders/NewOrders'))
 const EcommerceOrderDetails = lazy(() => import('@/app/(admin)/ecommerce/orders/[orderId]/NewOrderDetail'))
+const EcommerceCreateManualOrder = lazy(() => import('@/app/(admin)/ecommerce/orders/create-manual/page'))
 const EcommerceInventory = lazy(() => import('@/app/(admin)/ecommerce/inventory/NewInventory'))
 const ProductVariantsStock = lazy(() => import('@/app/(admin)/ecommerce/inventory/products/[productId]/variants/page'))
 const Testimonials = lazy(() => import('@/app/(admin)/ecommerce/testimonials/page'))
@@ -192,6 +193,11 @@ const appsRoutes: RoutesProps[] = [
     name: 'Order Details',
     path: '/ecommerce/orders/:orderId',
     element: <EcommerceOrderDetails />,
+  },
+  {
+    name: 'Create Manual Order',
+    path: '/ecommerce/orders/create-manual',
+    element: <EcommerceCreateManualOrder />,
   },
   {
     name: 'Inventory',

@@ -154,9 +154,10 @@ const NewOrders = () => {
   }
 
   const getCustomerPhone = (order: Order) => {
+    // Priority: Checkout form phone (manualOrderInfo) > User account phone > Guest info phone
+    if (order.manualOrderInfo?.phone) return order.manualOrderInfo.phone
     if (order.user?.phone) return order.user.phone
     if (order.guestInfo?.phone) return order.guestInfo.phone
-    if (order.manualOrderInfo?.phone) return order.manualOrderInfo.phone
     return 'N/A'
   }
 
@@ -256,6 +257,10 @@ const NewOrders = () => {
                       </DropdownItem>
                     </DropdownMenu>
                   </Dropdown>
+                  <Link to="/ecommerce/orders/create-manual" className="btn btn-primary">
+                    <IconifyIcon icon="bx:plus" className="me-1" />
+                    Create Manual Order
+                  </Link>
                 </div>
               </div>
             </CardBody>

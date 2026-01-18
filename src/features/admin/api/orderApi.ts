@@ -195,3 +195,75 @@ export const deleteOrder = async (orderId: string): Promise<AdminOrderResponse> 
   }
 };
 
+/**
+ * Create manual order
+ */
+export interface CreateManualOrderRequest {
+  orderType: 'existing' | 'guest';
+  items: Array<{
+    productId: string;
+    variantId?: string;
+    quantity: number;
+    price: number;
+    size?: string;
+    color?: string;
+    colorHexCode?: string;
+    sku?: string;
+    stockQuantity?: number;
+    stockStatus?: string;
+  }>;
+  subtotal: number;
+  discount?: number;
+  shippingCost?: number;
+  totalAmount: number;
+  status?: string;
+  notes?: string;
+  userId?: string;
+  guestInfo?: {
+    name: string;
+    phone: string;
+    email?: string;
+    address: string;
+  };
+  deliveryAddress?: string;
+  orderSource?: string;
+}
+
+export const createManualOrder = async (orderData: CreateManualOrderRequest): Promise<AdminOrderResponse> => {
+  try {
+    const response = await httpClient.post('/order/manual', orderData);
+    return {
+      success: response.data.success,
+      data: response.data.data,
+      message: response.data.message,
+    };
+  } catch (error: any) {
+    console.error('Error creating manual order:', error);
+    return {
+      success: false,
+      data: null,
+      message: error.response?.data?.message || error.message || 'Failed to create manual order',
+    };
+  }
+};
+
+/**
+ * Get customer info by phone number
+ */
+export const getCustomerInfoByPhone = async (phoneNumber: string): Promise<AdminOrderResponse> => {
+  try {
+    const response = await httpClient.get(`/order/get-customer-info/${phoneNumber}`);
+    return {
+      success: response.data.success,
+      data: response.data.data,
+      message: response.data.message,
+    };
+  } catch (error: any) {
+    console.error('Error fetching customer info:', error);
+    return {
+      success: false,
+      data: null,
+      message: error.response?.data?.message || error.message || 'Failed to fetch customer info',
+    };
+  }
+};

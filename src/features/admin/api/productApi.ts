@@ -330,3 +330,37 @@ export const deleteProduct = async (productId: string): Promise<DeleteProductRes
   }
 };
 
+/**
+ * Search products by SKU or name (for manual order creation)
+ */
+export interface SearchProductsResponse {
+  success: boolean;
+  data: Product[];
+  pagination?: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+  message: string;
+}
+
+export const searchProducts = async (query: string, limit: number = 10): Promise<SearchProductsResponse> => {
+  try {
+    const response = await httpClient.get(`/product/search?search=${encodeURIComponent(query)}&limit=${limit}`);
+    return {
+      success: response.data.success,
+      data: response.data.data || [],
+      pagination: response.data.pagination,
+      message: response.data.message,
+    };
+  } catch (error: unknown) {
+    console.error('Error searching products:', error);
+    const err = error as { response?: { data?: { message?: string } }; message?: string };
+    return {
+      success: false,
+      data: [],
+      message: err.response?.data?.message || err.message || 'Failed to search products',
+    };
+  }
+};

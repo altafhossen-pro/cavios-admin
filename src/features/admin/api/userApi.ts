@@ -233,3 +233,30 @@ export const createStaff = async (staffData: CreateStaffRequest): Promise<ApiRes
   }
 };
 
+/**
+ * Search users by email or phone (for manual order creation)
+ */
+export interface SearchUsersResponse {
+  success: boolean;
+  data: User[];
+  message: string;
+}
+
+export const searchUsers = async (query: string): Promise<SearchUsersResponse> => {
+  try {
+    const response = await httpClient.get(`/admin/user/search?q=${encodeURIComponent(query)}`);
+    return {
+      success: response.data.success,
+      data: response.data.data || [],
+      message: response.data.message,
+    };
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } }; message?: string };
+    console.error('Error searching users:', error);
+    return {
+      success: false,
+      data: [],
+      message: err.response?.data?.message || err.message || 'Failed to search users',
+    };
+  }
+};
