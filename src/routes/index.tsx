@@ -19,6 +19,7 @@ const EcommerceOrderDetails = lazy(() => import('@/app/(admin)/ecommerce/orders/
 const EcommerceCreateManualOrder = lazy(() => import('@/app/(admin)/ecommerce/orders/create-manual/page'))
 const EcommerceInventory = lazy(() => import('@/app/(admin)/ecommerce/inventory/NewInventory'))
 const ProductVariantsStock = lazy(() => import('@/app/(admin)/ecommerce/inventory/products/[productId]/variants/page'))
+const HeroSection = lazy(() => import('@/app/(admin)/ecommerce/hero-section/page'))
 const Testimonials = lazy(() => import('@/app/(admin)/ecommerce/testimonials/page'))
 const BannerCollections = lazy(() => import('@/app/(admin)/ecommerce/banner-collections/page'))
 const BannerCountdowns = lazy(() => import('@/app/(admin)/ecommerce/banner-countdowns/page'))
@@ -208,6 +209,11 @@ const appsRoutes: RoutesProps[] = [
     name: 'Product Variants Stock',
     path: '/inventory/products/:productId/variants',
     element: <ProductVariantsStock />,
+  },
+  {
+    name: 'Hero Section',
+    path: '/ecommerce/hero-section',
+    element: <HeroSection />,
   },
   {
     name: 'Testimonials',

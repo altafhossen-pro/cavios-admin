@@ -81,6 +81,12 @@ export const getNewMenuItems = (): MenuItemType[] => {
       label: 'Homepage',
       children: [
         {
+          key: 'hero-section',
+          label: 'Hero Section',
+          url: '/ecommerce/hero-section',
+          parentKey: 'homepage',
+        },
+        {
           key: 'testimonials',
           label: 'Testimonials',
           url: '/ecommerce/testimonials',
