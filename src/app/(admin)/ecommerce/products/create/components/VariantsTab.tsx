@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Card, CardBody, Row, Col, Form, Button, Alert } from 'react-bootstrap'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { TabComponentProps } from './types'
-import { uploadSingleImage, uploadMultipleImages } from '@/features/admin/api/uploadApi'
+import { uploadSingleImage } from '@/features/admin/api/uploadApi'
 import { useNotificationContext } from '@/context/useNotificationContext'
 
 const VariantsTab = ({ watch, setValue, uploading: parentUploading }: TabComponentProps) => {
@@ -48,7 +48,7 @@ const VariantsTab = ({ watch, setValue, uploading: parentUploading }: TabCompone
     setValue('variants', updated)
   }
 
-  // Handle variant image upload (single)
+  // Handle variant image upload (single image only - replaces existing)
   const handleVariantImageUpload = async (variantIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -77,19 +77,18 @@ const VariantsTab = ({ watch, setValue, uploading: parentUploading }: TabCompone
       const currentVariants = watch('variants') || []
       const updated = [...currentVariants]
       const variant = updated[variantIndex]
-      const currentImages = variant.images || []
       
-      // Add new image to variant
+      // Replace existing image with new one (only one image per variant)
       const newImage = {
         url: response.data.url,
         altText: response.data.originalName || `Variant ${variantIndex + 1} Image`,
-        isPrimary: currentImages.length === 0, // First image is primary
-        sortOrder: currentImages.length,
+        isPrimary: true,
+        sortOrder: 0,
       }
       
       updated[variantIndex] = {
         ...variant,
-        images: [...currentImages, newImage],
+        images: [newImage], // Replace, don't add
       }
       setValue('variants', updated)
       
@@ -101,68 +100,6 @@ const VariantsTab = ({ watch, setValue, uploading: parentUploading }: TabCompone
       const err = error as { message?: string }
       showNotification({
         message: err.message || 'Failed to upload image',
-        variant: 'danger',
-      })
-    } finally {
-      setUploadingVariants((prev) => ({ ...prev, [variantIndex]: false }))
-      // Reset input so same file can be selected again
-      e.target.value = ''
-    }
-  }
-
-  // Handle variant multiple images upload
-  const handleVariantMultipleImagesUpload = async (variantIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    if (files.length === 0) return
-
-    // Validate all files
-    for (const file of files) {
-      if (!file.type.startsWith('image/')) {
-        showNotification({
-          message: 'Please select valid image files',
-          variant: 'danger',
-        })
-        return
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        showNotification({
-          message: 'Image size should be less than 5MB',
-          variant: 'danger',
-        })
-        return
-      }
-    }
-
-    setUploadingVariants((prev) => ({ ...prev, [variantIndex]: true }))
-    try {
-      const response = await uploadMultipleImages(files)
-      const currentVariants = watch('variants') || []
-      const updated = [...currentVariants]
-      const variant = updated[variantIndex]
-      const currentImages = variant.images || []
-      
-      // Add new images to variant
-      const newImages = response.data.map((img, index) => ({
-        url: img.url,
-        altText: img.originalName || `Variant ${variantIndex + 1} Image ${index + 1}`,
-        isPrimary: currentImages.length === 0 && index === 0, // First image is primary if no images exist
-        sortOrder: currentImages.length + index,
-      }))
-      
-      updated[variantIndex] = {
-        ...variant,
-        images: [...currentImages, ...newImages],
-      }
-      setValue('variants', updated)
-      
-      showNotification({
-        message: `${newImages.length} image(s) uploaded successfully`,
-        variant: 'success',
-      })
-    } catch (error: unknown) {
-      const err = error as { message?: string }
-      showNotification({
-        message: err.message || 'Failed to upload images',
         variant: 'danger',
       })
     } finally {
@@ -326,22 +263,17 @@ const VariantsTab = ({ watch, setValue, uploading: parentUploading }: TabCompone
 
                     <Col md={12}>
                       <Form.Group className="mb-3">
-                        <Form.Label>Variant Images</Form.Label>
+                        <Form.Label>Variant Image</Form.Label>
                         <div className="mb-2">
                           <Form.Control
                             type="file"
                             accept="image/*"
-                            onChange={(e) => handleVariantImageUpload(index, e)}
-                            disabled={isUploading}
-                            className="mb-2"
-                          />
-                          <Form.Control
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            onChange={(e) => handleVariantMultipleImagesUpload(index, e)}
+                            onChange={(e) => handleVariantImageUpload(index, e as React.ChangeEvent<HTMLInputElement>)}
                             disabled={isUploading}
                           />
+                          <Form.Text className="text-muted">
+                            Only one image per variant. Selecting a new image will replace the existing one.
+                          </Form.Text>
                         </div>
                         {isUploading && (
                           <div className="text-muted mb-2">
@@ -361,11 +293,6 @@ const VariantsTab = ({ watch, setValue, uploading: parentUploading }: TabCompone
                                       style={{ width: '100%', height: '150px', objectFit: 'cover' }}
                                       className="img-thumbnail"
                                     />
-                                    {img.isPrimary && (
-                                      <span className="badge bg-primary position-absolute top-0 start-0 m-1">
-                                        Primary
-                                      </span>
-                                    )}
                                     <Button
                                       variant="danger"
                                       size="sm"

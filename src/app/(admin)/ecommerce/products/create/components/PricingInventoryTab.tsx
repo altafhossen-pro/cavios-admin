@@ -360,7 +360,7 @@ const PricingInventoryTab = ({ watch, setValue, uploading: parentUploading }: Ta
                           <Form.Control
                             type="file"
                             accept="image/*"
-                            onChange={(e) => handleVariantImageUpload(index, e)}
+                            onChange={(e) => handleVariantImageUpload(index, e as React.ChangeEvent<HTMLInputElement>)}
                             disabled={isUploading}
                           />
                           <Form.Text className="text-muted">
