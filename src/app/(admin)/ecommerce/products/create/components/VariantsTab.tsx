@@ -1,10 +1,15 @@
+import { useState } from 'react'
 import { Card, CardBody, Row, Col, Form, Button, Alert } from 'react-bootstrap'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { TabComponentProps } from './types'
+import { uploadSingleImage, uploadMultipleImages } from '@/features/admin/api/uploadApi'
+import { useNotificationContext } from '@/context/useNotificationContext'
 
-const VariantsTab = ({ watch, setValue }: TabComponentProps) => {
+const VariantsTab = ({ watch, setValue, uploading: parentUploading }: TabComponentProps) => {
   const variants = watch('variants') || []
   const productType = watch('productType')
+  const { showNotification } = useNotificationContext()
+  const [uploadingVariants, setUploadingVariants] = useState<{ [key: number]: boolean }>({})
 
   if (productType !== 'variable') {
     return null
@@ -43,6 +48,144 @@ const VariantsTab = ({ watch, setValue }: TabComponentProps) => {
     setValue('variants', updated)
   }
 
+  // Handle variant image upload (single)
+  const handleVariantImageUpload = async (variantIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showNotification({
+        message: 'Please select a valid image file',
+        variant: 'danger',
+      })
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showNotification({
+        message: 'Image size should be less than 5MB',
+        variant: 'danger',
+      })
+      return
+    }
+
+    setUploadingVariants((prev) => ({ ...prev, [variantIndex]: true }))
+    try {
+      const response = await uploadSingleImage(file)
+      const currentVariants = watch('variants') || []
+      const updated = [...currentVariants]
+      const variant = updated[variantIndex]
+      const currentImages = variant.images || []
+      
+      // Add new image to variant
+      const newImage = {
+        url: response.data.url,
+        altText: response.data.originalName || `Variant ${variantIndex + 1} Image`,
+        isPrimary: currentImages.length === 0, // First image is primary
+        sortOrder: currentImages.length,
+      }
+      
+      updated[variantIndex] = {
+        ...variant,
+        images: [...currentImages, newImage],
+      }
+      setValue('variants', updated)
+      
+      showNotification({
+        message: 'Image uploaded successfully',
+        variant: 'success',
+      })
+    } catch (error: unknown) {
+      const err = error as { message?: string }
+      showNotification({
+        message: err.message || 'Failed to upload image',
+        variant: 'danger',
+      })
+    } finally {
+      setUploadingVariants((prev) => ({ ...prev, [variantIndex]: false }))
+      // Reset input so same file can be selected again
+      e.target.value = ''
+    }
+  }
+
+  // Handle variant multiple images upload
+  const handleVariantMultipleImagesUpload = async (variantIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+
+    // Validate all files
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) {
+        showNotification({
+          message: 'Please select valid image files',
+          variant: 'danger',
+        })
+        return
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showNotification({
+          message: 'Image size should be less than 5MB',
+          variant: 'danger',
+        })
+        return
+      }
+    }
+
+    setUploadingVariants((prev) => ({ ...prev, [variantIndex]: true }))
+    try {
+      const response = await uploadMultipleImages(files)
+      const currentVariants = watch('variants') || []
+      const updated = [...currentVariants]
+      const variant = updated[variantIndex]
+      const currentImages = variant.images || []
+      
+      // Add new images to variant
+      const newImages = response.data.map((img, index) => ({
+        url: img.url,
+        altText: img.originalName || `Variant ${variantIndex + 1} Image ${index + 1}`,
+        isPrimary: currentImages.length === 0 && index === 0, // First image is primary if no images exist
+        sortOrder: currentImages.length + index,
+      }))
+      
+      updated[variantIndex] = {
+        ...variant,
+        images: [...currentImages, ...newImages],
+      }
+      setValue('variants', updated)
+      
+      showNotification({
+        message: `${newImages.length} image(s) uploaded successfully`,
+        variant: 'success',
+      })
+    } catch (error: unknown) {
+      const err = error as { message?: string }
+      showNotification({
+        message: err.message || 'Failed to upload images',
+        variant: 'danger',
+      })
+    } finally {
+      setUploadingVariants((prev) => ({ ...prev, [variantIndex]: false }))
+      // Reset input so same file can be selected again
+      e.target.value = ''
+    }
+  }
+
+  // Remove variant image
+  const removeVariantImage = (variantIndex: number, imageIndex: number) => {
+    const currentVariants = watch('variants') || []
+    const updated = [...currentVariants]
+    const variant = updated[variantIndex]
+    const images = variant.images || []
+    
+    updated[variantIndex] = {
+      ...variant,
+      images: images.filter((_: unknown, i: number) => i !== imageIndex),
+    }
+    setValue('variants', updated)
+  }
+
   return (
     <Card>
       <CardBody>
@@ -65,7 +208,9 @@ const VariantsTab = ({ watch, setValue }: TabComponentProps) => {
               stockQuantity: number
               lowStockThreshold: number
               stockStatus: string
+              images: Array<{ url: string; altText: string; isPrimary: boolean; sortOrder: number }>
             }
+            const isUploading = uploadingVariants[index] || parentUploading || false
             return (
               <Card key={index} className="mb-3">
                 <CardBody>
@@ -180,11 +325,62 @@ const VariantsTab = ({ watch, setValue }: TabComponentProps) => {
                     </Col>
 
                     <Col md={12}>
-                      <Alert variant="info" className="mb-0">
-                        <small>
-                          <strong>Note:</strong> Variant attributes (Size, Color, etc.) and images can be added after product creation in the product edit page.
-                        </small>
-                      </Alert>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Variant Images</Form.Label>
+                        <div className="mb-2">
+                          <Form.Control
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleVariantImageUpload(index, e)}
+                            disabled={isUploading}
+                            className="mb-2"
+                          />
+                          <Form.Control
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => handleVariantMultipleImagesUpload(index, e)}
+                            disabled={isUploading}
+                          />
+                        </div>
+                        {isUploading && (
+                          <div className="text-muted mb-2">
+                            <IconifyIcon icon="bx:loader-alt" className="spinner-border spinner-border-sm me-1" />
+                            Uploading...
+                          </div>
+                        )}
+                        {v.images && v.images.length > 0 && (
+                          <div className="mt-3">
+                            <Row>
+                              {v.images.map((img: { url: string; altText: string; isPrimary: boolean }, imgIndex: number) => (
+                                <Col md={3} key={imgIndex} className="mb-3">
+                                  <div className="position-relative">
+                                    <img
+                                      src={img.url}
+                                      alt={img.altText}
+                                      style={{ width: '100%', height: '150px', objectFit: 'cover' }}
+                                      className="img-thumbnail"
+                                    />
+                                    {img.isPrimary && (
+                                      <span className="badge bg-primary position-absolute top-0 start-0 m-1">
+                                        Primary
+                                      </span>
+                                    )}
+                                    <Button
+                                      variant="danger"
+                                      size="sm"
+                                      className="position-absolute top-0 end-0 m-1"
+                                      onClick={() => removeVariantImage(index, imgIndex)}
+                                    >
+                                      <IconifyIcon icon="bx:x" />
+                                    </Button>
+                                  </div>
+                                </Col>
+                              ))}
+                            </Row>
+                          </div>
+                        )}
+                      </Form.Group>
                     </Col>
                   </Row>
                 </CardBody>

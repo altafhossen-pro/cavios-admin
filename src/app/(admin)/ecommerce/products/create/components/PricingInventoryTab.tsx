@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import { Card, CardBody, Row, Col, Form, Button, Alert } from 'react-bootstrap'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { TabComponentProps } from './types'
+import { uploadSingleImage } from '@/features/admin/api/uploadApi'
+import { useNotificationContext } from '@/context/useNotificationContext'
 
 // Common colors for color picker palette
 const COLOR_PALETTE = [
@@ -26,8 +29,10 @@ const COLOR_PALETTE = [
   { name: 'Gold', hexCode: '#FFD700' },
 ]
 
-const PricingInventoryTab = ({ watch, setValue }: TabComponentProps) => {
+const PricingInventoryTab = ({ watch, setValue, uploading: parentUploading }: TabComponentProps) => {
   const variants = watch('variants') || []
+  const { showNotification } = useNotificationContext()
+  const [uploadingVariants, setUploadingVariants] = useState<{ [key: number]: boolean }>({})
 
   const addVariant = () => {
     const currentVariants = watch('variants') || []
@@ -90,6 +95,81 @@ const PricingInventoryTab = ({ watch, setValue }: TabComponentProps) => {
     return attr?.hexCode || ''
   }
 
+  // Handle variant image upload (single image only - replaces existing)
+  const handleVariantImageUpload = async (variantIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showNotification({
+        message: 'Please select a valid image file',
+        variant: 'danger',
+      })
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showNotification({
+        message: 'Image size should be less than 5MB',
+        variant: 'danger',
+      })
+      return
+    }
+
+    setUploadingVariants((prev) => ({ ...prev, [variantIndex]: true }))
+    try {
+      const response = await uploadSingleImage(file)
+      const currentVariants = watch('variants') || []
+      const updated = [...currentVariants]
+      const variant = updated[variantIndex]
+      
+      // Replace existing image with new one (only one image per variant)
+      const newImage = {
+        url: response.data.url,
+        altText: response.data.originalName || `Variant ${variantIndex + 1} Image`,
+        isPrimary: true,
+        sortOrder: 0,
+      }
+      
+      updated[variantIndex] = {
+        ...variant,
+        images: [newImage], // Replace, don't add
+      }
+      setValue('variants', updated)
+      
+      showNotification({
+        message: 'Image uploaded successfully',
+        variant: 'success',
+      })
+    } catch (error: unknown) {
+      const err = error as { message?: string }
+      showNotification({
+        message: err.message || 'Failed to upload image',
+        variant: 'danger',
+      })
+    } finally {
+      setUploadingVariants((prev) => ({ ...prev, [variantIndex]: false }))
+      // Reset input so same file can be selected again
+      e.target.value = ''
+    }
+  }
+
+  // Remove variant image
+  const removeVariantImage = (variantIndex: number, imageIndex: number) => {
+    const currentVariants = watch('variants') || []
+    const updated = [...currentVariants]
+    const variant = updated[variantIndex]
+    const images = variant.images || []
+    
+    updated[variantIndex] = {
+      ...variant,
+      images: images.filter((_: unknown, i: number) => i !== imageIndex),
+    }
+    setValue('variants', updated)
+  }
+
   return (
     <Card>
       <CardBody>
@@ -108,11 +188,13 @@ const PricingInventoryTab = ({ watch, setValue }: TabComponentProps) => {
               attributes: Array<{ name: string; value: string; displayValue: string; hexCode: string }>
               currentPrice: number
               originalPrice: number
+              images: Array<{ url: string; altText: string; isPrimary: boolean; sortOrder: number }>
             }
             
             const sizeValue = getVariantAttribute(variant, 'Size')
             const colorValue = getVariantAttribute(variant, 'Color')
             const colorHexCode = getVariantAttributeHexCode(variant, 'Color')
+            const isUploading = uploadingVariants[index] || parentUploading || false
 
             return (
               <Card key={index} className="mb-3">
@@ -272,11 +354,52 @@ const PricingInventoryTab = ({ watch, setValue }: TabComponentProps) => {
                     </Col>
 
                     <Col md={12}>
-                      <Alert variant="info" className="mb-0">
-                        <small>
-                          <strong>Note:</strong> Stock quantity will be managed from the Inventory page. Variant images can be added after product creation in the product edit page.
-                        </small>
-                      </Alert>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Variant Image</Form.Label>
+                        <div className="mb-2">
+                          <Form.Control
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleVariantImageUpload(index, e)}
+                            disabled={isUploading}
+                          />
+                          <Form.Text className="text-muted">
+                            Only one image per variant. Selecting a new image will replace the existing one.
+                          </Form.Text>
+                        </div>
+                        {isUploading && (
+                          <div className="text-muted mb-2">
+                            <IconifyIcon icon="bx:loader-alt" className="spinner-border spinner-border-sm me-1" />
+                            Uploading...
+                          </div>
+                        )}
+                        {v.images && v.images.length > 0 && (
+                          <div className="mt-3">
+                            <Row>
+                              {v.images.map((img: { url: string; altText: string; isPrimary: boolean }, imgIndex: number) => (
+                                <Col md={3} key={imgIndex} className="mb-3">
+                                  <div className="position-relative">
+                                    <img
+                                      src={img.url}
+                                      alt={img.altText}
+                                      style={{ width: '100%', height: '150px', objectFit: 'cover' }}
+                                      className="img-thumbnail"
+                                    />
+                                    <Button
+                                      variant="danger"
+                                      size="sm"
+                                      className="position-absolute top-0 end-0 m-1"
+                                      onClick={() => removeVariantImage(index, imgIndex)}
+                                    >
+                                      <IconifyIcon icon="bx:x" />
+                                    </Button>
+                                  </div>
+                                </Col>
+                              ))}
+                            </Row>
+                          </div>
+                        )}
+                      </Form.Group>
                     </Col>
                   </Row>
                 </CardBody>

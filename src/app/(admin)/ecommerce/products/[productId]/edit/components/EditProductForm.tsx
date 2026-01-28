@@ -295,7 +295,7 @@ const EditProductForm = () => {
           stockStatus: variant.stockStatus as 'in_stock' | 'out_of_stock' | 'low_stock' | 'pre_order' | undefined,
           weight: variant.weight,
           dimensions: variant.dimensions,
-          images: variant.images,
+          images: variant.images || [], // Ensure images array is always present
           isActive: true,
         }))
       }
