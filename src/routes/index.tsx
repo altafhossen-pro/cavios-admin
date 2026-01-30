@@ -30,6 +30,7 @@ const Comments = lazy(() => import('@/app/(admin)/ecommerce/comments/page'))
 const StaticPages = lazy(() => import('@/app/(admin)/ecommerce/static-pages/page'))
 const StaticPageCreate = lazy(() => import('@/app/(admin)/ecommerce/static-pages/create/page'))
 const StaticPageEdit = lazy(() => import('@/app/(admin)/ecommerce/static-pages/[pageId]/edit/page'))
+const DeliveryChargeSettings = lazy(() => import('@/app/(admin)/settings/delivery-charge/page'))
 const Chat = lazy(() => import('@/app/(admin)/apps/chat/page'))
 const Email = lazy(() => import('@/app/(admin)/apps/email/page'))
 const Todo = lazy(() => import('@/app/(admin)/apps/todo/page'))
@@ -294,6 +295,11 @@ const appsRoutes: RoutesProps[] = [
     name: 'Invoice Details',
     path: '/invoices/:orderId',
     element: <InvoiceDetails />,
+  },
+  {
+    name: 'Delivery Charge Settings',
+    path: '/settings/delivery-charge',
+    element: <DeliveryChargeSettings />,
   },
 ]
 

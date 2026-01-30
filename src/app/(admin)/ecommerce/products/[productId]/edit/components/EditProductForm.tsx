@@ -13,10 +13,12 @@ import ImagesTab from '../../../create/components/ImagesTab'
 import PricingInventoryTab from '../../../create/components/PricingInventoryTab'
 import SEOTab from '../../../create/components/SEOTab'
 import AdditionalInfoTab from '../../../create/components/AdditionalInfoTab'
+import { useNotificationContext } from '@/context/useNotificationContext'
 
 const EditProductForm = () => {
   const navigate = useNavigate()
   const { productId } = useParams<{ productId: string }>()
+  const { showNotification } = useNotificationContext()
   const [activeTab, setActiveTab] = useState<string>('basic')
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(false)
@@ -246,10 +248,57 @@ const EditProductForm = () => {
       .replace(/^-+|-+$/g, '')
   }
 
+  // Validate variants before submission
+  const validateVariants = (variants: ProductFormData['variants']): string | null => {
+    if (!variants || variants.length === 0) {
+      return 'At least one variant is required'
+    }
+
+    for (let i = 0; i < variants.length; i++) {
+      const variant = variants[i]
+      
+      // Validate SKU is required
+      if (!variant.sku || variant.sku.trim() === '') {
+        return `Variant ${i + 1}: SKU is required. Please enter a SKU for this variant.`
+      }
+
+      // Validate variant image is required
+      if (!variant.images || variant.images.length === 0) {
+        return `Variant ${i + 1}: Variant image is required. Please upload an image for this variant.`
+      }
+
+      // Validate color name if color is enabled
+      const colorAttribute = variant.attributes?.find((attr) => attr.name === 'Color')
+      if (colorAttribute && (!colorAttribute.value || colorAttribute.value.trim() === '')) {
+        return `Variant ${i + 1}: Color is enabled but color name is required. Please enter a color name or disable color for this variant.`
+      }
+
+      // Validate current price
+      if (!variant.currentPrice || variant.currentPrice <= 0) {
+        return `Variant ${i + 1}: Current price is required and must be greater than 0.`
+      }
+    }
+
+    return null
+  }
+
   // Handle form submission
   const onSubmit = async (data: ProductFormData) => {
     if (!productId) {
       setError('Product ID is missing')
+      return
+    }
+
+    // Validate variants
+    const variantError = validateVariants(data.variants)
+    if (variantError) {
+      setError(variantError)
+      showNotification({
+        message: variantError,
+        variant: 'danger',
+      })
+      // Switch to pricing tab to show the error
+      setActiveTab('pricing')
       return
     }
 

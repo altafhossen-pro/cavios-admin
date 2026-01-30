@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardBody, Row, Col, Form, Button, Alert } from 'react-bootstrap'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { TabComponentProps } from './types'
@@ -33,9 +33,31 @@ const PricingInventoryTab = ({ watch, setValue, uploading: parentUploading }: Ta
   const variants = watch('variants') || []
   const { showNotification } = useNotificationContext()
   const [uploadingVariants, setUploadingVariants] = useState<{ [key: number]: boolean }>({})
+  // Track size and color enable/disable state for each variant
+  const [variantSettings, setVariantSettings] = useState<{
+    [key: number]: { sizeEnabled: boolean; colorEnabled: boolean }
+  }>({})
+
+  // Initialize variant settings when variants change
+  useEffect(() => {
+    const newSettings: { [key: number]: { sizeEnabled: boolean; colorEnabled: boolean } } = {}
+    variants.forEach((variant: unknown, index: number) => {
+      const v = variant as { attributes?: Array<{ name: string; value: string }> }
+      const hasSize = v.attributes?.some((attr) => attr.name === 'Size' && attr.value.trim() !== '')
+      const hasColor = v.attributes?.some((attr) => attr.name === 'Color' && attr.value.trim() !== '')
+      
+      // Initialize from existing attributes or default to enabled if attributes exist
+      newSettings[index] = {
+        sizeEnabled: variantSettings[index]?.sizeEnabled ?? hasSize ?? true,
+        colorEnabled: variantSettings[index]?.colorEnabled ?? hasColor ?? true,
+      }
+    })
+    setVariantSettings(newSettings)
+  }, [variants.length]) // Only update when variant count changes
 
   const addVariant = () => {
     const currentVariants = watch('variants') || []
+    const newIndex = currentVariants.length
     setValue('variants', [
       ...currentVariants,
       {
@@ -48,11 +70,32 @@ const PricingInventoryTab = ({ watch, setValue, uploading: parentUploading }: Ta
         images: [],
       },
     ])
+    // Initialize settings for new variant (both enabled by default)
+    setVariantSettings((prev) => ({
+      ...prev,
+      [newIndex]: { sizeEnabled: true, colorEnabled: true },
+    }))
   }
 
   const removeVariant = (index: number) => {
     const currentVariants = watch('variants') || []
     setValue('variants', currentVariants.filter((_: unknown, i: number) => i !== index))
+    // Remove variant settings
+    setVariantSettings((prev) => {
+      const updated = { ...prev }
+      delete updated[index]
+      // Reindex remaining variants
+      const reindexed: { [key: number]: { sizeEnabled: boolean; colorEnabled: boolean } } = {}
+      Object.keys(updated).forEach((key) => {
+        const oldIndex = parseInt(key)
+        if (oldIndex > index) {
+          reindexed[oldIndex - 1] = updated[oldIndex]
+        } else if (oldIndex < index) {
+          reindexed[oldIndex] = updated[oldIndex]
+        }
+      })
+      return reindexed
+    })
   }
 
   const updateVariant = (index: number, field: string, value: unknown) => {
@@ -71,16 +114,82 @@ const PricingInventoryTab = ({ watch, setValue, uploading: parentUploading }: Ta
     // Remove existing attribute with same name
     const filteredAttributes = attributes.filter((attr: { name: string }) => attr.name !== attributeName)
     
-    // Add new attribute
-    filteredAttributes.push({
-      name: attributeName,
-      value: attributeValue,
-      displayValue: displayValue || attributeValue,
-      hexCode: hexCode || '',
-    })
+    // For Color: if color is enabled, always keep the attribute (even if empty) so we can validate
+    // For Size: only add if value is not empty
+    const settings = variantSettings[index]
+    if (attributeName === 'Color' && settings?.colorEnabled !== false) {
+      // Keep Color attribute even if empty when color is enabled (for validation)
+      filteredAttributes.push({
+        name: attributeName,
+        value: attributeValue,
+        displayValue: displayValue || attributeValue,
+        hexCode: hexCode || '',
+      })
+    } else if (attributeValue.trim() !== '') {
+      // For other attributes or when disabled, only add if value is not empty
+      filteredAttributes.push({
+        name: attributeName,
+        value: attributeValue,
+        displayValue: displayValue || attributeValue,
+        hexCode: hexCode || '',
+      })
+    }
     
     updated[index] = { ...variant, attributes: filteredAttributes }
     setValue('variants', updated)
+  }
+
+  // Toggle size enabled/disabled
+  const toggleSizeEnabled = (index: number, enabled: boolean) => {
+    setVariantSettings((prev) => ({
+      ...prev,
+      [index]: { ...prev[index], sizeEnabled: enabled },
+    }))
+    
+    // If disabling, remove size attribute
+    if (!enabled) {
+      const currentVariants = watch('variants') || []
+      const updated = [...currentVariants]
+      const variant = updated[index]
+      const attributes = (variant.attributes || []).filter((attr: { name: string }) => attr.name !== 'Size')
+      updated[index] = { ...variant, attributes }
+      setValue('variants', updated)
+    }
+  }
+
+  // Toggle color enabled/disabled
+  const toggleColorEnabled = (index: number, enabled: boolean) => {
+    setVariantSettings((prev) => ({
+      ...prev,
+      [index]: { ...prev[index], colorEnabled: enabled },
+    }))
+    
+    // If disabling, remove color attribute (name and hexCode)
+    if (!enabled) {
+      const currentVariants = watch('variants') || []
+      const updated = [...currentVariants]
+      const variant = updated[index]
+      const attributes = (variant.attributes || []).filter((attr: { name: string }) => attr.name !== 'Color')
+      updated[index] = { ...variant, attributes }
+      setValue('variants', updated)
+    }
+  }
+
+  // Validate color when updating
+  const handleColorNameChange = (index: number, colorName: string) => {
+    const settings = variantSettings[index]
+    if (settings?.colorEnabled && !colorName.trim()) {
+      // Don't show error on every keystroke, only when trying to save
+      // We'll validate on form submit
+    }
+    const colorHexCode = getVariantAttributeHexCode(variants[index], 'Color')
+    updateVariantAttribute(
+      index,
+      'Color',
+      colorName,
+      colorName,
+      colorHexCode || ''
+    )
   }
 
   const getVariantAttribute = (variant: unknown, attributeName: string): string => {
@@ -206,7 +315,8 @@ const PricingInventoryTab = ({ watch, setValue, uploading: parentUploading }: Ta
                     </Button>
                   </div>
 
-                  <Row>
+                  {/* First Row: SKU (Left) and Variant Image (Right) */}
+                  <Row className="mb-3">
                     <Col md={6}>
                       <Form.Group className="mb-3">
                         <Form.Label>SKU <span className="text-danger">*</span></Form.Label>
@@ -215,50 +325,116 @@ const PricingInventoryTab = ({ watch, setValue, uploading: parentUploading }: Ta
                           value={v.sku}
                           onChange={(e) => updateVariant(index, 'sku', e.target.value)}
                           placeholder="e.g., PRODUCT-SIZE-COLOR"
+                          required
                         />
+                        <Form.Text className="text-muted">SKU is required for all variants</Form.Text>
                       </Form.Group>
                     </Col>
 
                     <Col md={6}>
                       <Form.Group className="mb-3">
-                        <Form.Label>Size</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={sizeValue}
-                          onChange={(e) => {
-                            const size = e.target.value
-                            updateVariantAttribute(index, 'Size', size, size)
-                          }}
-                          placeholder="e.g., S, M, L, XL or custom size"
-                        />
+                        <Form.Label>Variant Image <span className="text-danger">*</span></Form.Label>
+                        <div className="mb-2">
+                          <Form.Control
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleVariantImageUpload(index, e as React.ChangeEvent<HTMLInputElement>)}
+                            disabled={isUploading}
+                            required={!v.images || v.images.length === 0}
+                          />
+                          <Form.Text className="text-muted">
+                            One image per variant is required. Selecting a new image will replace the existing one.
+                          </Form.Text>
+                        </div>
+                        {isUploading && (
+                          <div className="text-muted mb-2">
+                            <IconifyIcon icon="bx:loader-alt" className="spinner-border spinner-border-sm me-1" />
+                            Uploading...
+                          </div>
+                        )}
+                        {v.images && v.images.length > 0 && (
+                          <div className="mt-2">
+                            {v.images.map((img: { url: string; altText: string; isPrimary: boolean }, imgIndex: number) => (
+                              <div key={imgIndex} className="position-relative d-inline-block me-2">
+                                <img
+                                  src={img.url}
+                                  alt={img.altText}
+                                  style={{ width: '120px', height: '120px', objectFit: 'cover' }}
+                                  className="img-thumbnail"
+                                />
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  className="position-absolute top-0 end-0 m-1"
+                                  onClick={() => removeVariantImage(index, imgIndex)}
+                                  style={{ padding: '2px 6px' }}
+                                >
+                                  <IconifyIcon icon="bx:x" style={{ fontSize: '14px' }} />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  {/* Second Row: Size and Color */}
+                  <Row className="mb-3">
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <Form.Label className="mb-0">Size</Form.Label>
+                          <Form.Check
+                            type="switch"
+                            id={`size-toggle-${index}`}
+                            label={variantSettings[index]?.sizeEnabled !== false ? 'Enabled' : 'Disabled'}
+                            checked={variantSettings[index]?.sizeEnabled !== false}
+                            onChange={(e) => toggleSizeEnabled(index, e.target.checked)}
+                          />
+                        </div>
+                        {variantSettings[index]?.sizeEnabled !== false && (
+                          <Form.Control
+                            type="text"
+                            value={sizeValue}
+                            onChange={(e) => {
+                              const size = e.target.value
+                              updateVariantAttribute(index, 'Size', size, size)
+                            }}
+                            placeholder="e.g., S, M, L, XL or custom size"
+                          />
+                        )}
+                        {variantSettings[index]?.sizeEnabled === false && (
+                          <Form.Text className="text-muted">Size is disabled for this variant</Form.Text>
+                        )}
                       </Form.Group>
                     </Col>
 
-                    <Col md={12}>
+                    <Col md={6}>
                       <Form.Group className="mb-3">
-                        <Form.Label>Color</Form.Label>
-                        <Row>
-                          <Col md={6}>
-                            <Form.Label className="small text-muted">Color Name</Form.Label>
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <Form.Label className="mb-0">Color</Form.Label>
+                          <Form.Check
+                            type="switch"
+                            id={`color-toggle-${index}`}
+                            label={variantSettings[index]?.colorEnabled !== false ? 'Enabled' : 'Disabled'}
+                            checked={variantSettings[index]?.colorEnabled !== false}
+                            onChange={(e) => toggleColorEnabled(index, e.target.checked)}
+                          />
+                        </div>
+                        {variantSettings[index]?.colorEnabled !== false ? (
+                          <>
+                            <Form.Label className="small text-muted">Color Name <span className="text-danger">*</span></Form.Label>
                             <Form.Control
                               type="text"
                               value={colorValue}
-                              onChange={(e) => {
-                                const colorName = e.target.value
-                                updateVariantAttribute(
-                                  index,
-                                  'Color',
-                                  colorName,
-                                  colorName,
-                                  colorHexCode || ''
-                                )
-                              }}
+                              onChange={(e) => handleColorNameChange(index, e.target.value)}
                               placeholder="Enter color name (e.g., Red, Blue)"
+                              required
+                              className="mb-2"
                             />
-                          </Col>
-                          <Col md={6}>
-                            <Form.Label className="small text-muted">Color Picker</Form.Label>
-                            <div className="d-flex align-items-center gap-2">
+                            <div className="d-flex align-items-center gap-2 mb-2">
+                              <Form.Label className="small text-muted mb-0">Color Picker:</Form.Label>
                               <Form.Control
                                 type="color"
                                 value={colorHexCode || '#000000'}
@@ -272,15 +448,15 @@ const PricingInventoryTab = ({ watch, setValue, uploading: parentUploading }: Ta
                                     hexCode
                                   )
                                 }}
-                                style={{ width: '60px', height: '38px', cursor: 'pointer' }}
+                                style={{ width: '50px', height: '38px', cursor: 'pointer' }}
                                 title="Pick a color"
                               />
                               {colorHexCode && (
                                 <div className="d-flex align-items-center gap-2">
                                   <div
                                     style={{
-                                      width: '40px',
-                                      height: '40px',
+                                      width: '30px',
+                                      height: '30px',
                                       backgroundColor: colorHexCode,
                                       border: '2px solid #ddd',
                                       borderRadius: '4px',
@@ -291,42 +467,47 @@ const PricingInventoryTab = ({ watch, setValue, uploading: parentUploading }: Ta
                                 </div>
                               )}
                             </div>
-                          </Col>
-                        </Row>
-                        <div className="mt-2">
-                          <Form.Label className="small text-muted mb-2 d-block">Quick Color Palette</Form.Label>
-                          <div className="d-flex flex-wrap gap-2">
-                            {COLOR_PALETTE.map((color) => (
-                              <button
-                                key={color.name}
-                                type="button"
-                                className="btn btn-sm"
-                                style={{
-                                  width: '35px',
-                                  height: '35px',
-                                  backgroundColor: color.hexCode,
-                                  border: colorHexCode === color.hexCode ? '3px solid #007bff' : '2px solid #ddd',
-                                  borderRadius: '4px',
-                                  cursor: 'pointer',
-                                  padding: 0,
-                                }}
-                                onClick={() => {
-                                  updateVariantAttribute(
-                                    index,
-                                    'Color',
-                                    color.name,
-                                    color.name,
-                                    color.hexCode
-                                  )
-                                }}
-                                title={color.name}
-                              />
-                            ))}
-                          </div>
-                        </div>
+                            <div>
+                              <Form.Label className="small text-muted mb-2 d-block">Quick Color Palette</Form.Label>
+                              <div className="d-flex flex-wrap gap-2">
+                                {COLOR_PALETTE.map((color) => (
+                                  <button
+                                    key={color.name}
+                                    type="button"
+                                    className="btn btn-sm"
+                                    style={{
+                                      width: '32px',
+                                      height: '32px',
+                                      backgroundColor: color.hexCode,
+                                      border: colorHexCode === color.hexCode ? '3px solid #007bff' : '2px solid #ddd',
+                                      borderRadius: '4px',
+                                      cursor: 'pointer',
+                                      padding: 0,
+                                    }}
+                                    onClick={() => {
+                                      updateVariantAttribute(
+                                        index,
+                                        'Color',
+                                        color.name,
+                                        color.name,
+                                        color.hexCode
+                                      )
+                                    }}
+                                    title={color.name}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <Form.Text className="text-muted">Color is disabled for this variant</Form.Text>
+                        )}
                       </Form.Group>
                     </Col>
+                  </Row>
 
+                  {/* Third Row: Pricing */}
+                  <Row>
                     <Col md={6}>
                       <Form.Group className="mb-3">
                         <Form.Label>Current Price <span className="text-danger">*</span></Form.Label>
@@ -336,6 +517,7 @@ const PricingInventoryTab = ({ watch, setValue, uploading: parentUploading }: Ta
                           value={v.currentPrice}
                           onChange={(e) => updateVariant(index, 'currentPrice', parseFloat(e.target.value) || 0)}
                           placeholder="0.00"
+                          required
                         />
                       </Form.Group>
                     </Col>
@@ -350,55 +532,6 @@ const PricingInventoryTab = ({ watch, setValue, uploading: parentUploading }: Ta
                           onChange={(e) => updateVariant(index, 'originalPrice', parseFloat(e.target.value) || 0)}
                           placeholder="0.00"
                         />
-                      </Form.Group>
-                    </Col>
-
-                    <Col md={12}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Variant Image</Form.Label>
-                        <div className="mb-2">
-                          <Form.Control
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleVariantImageUpload(index, e as React.ChangeEvent<HTMLInputElement>)}
-                            disabled={isUploading}
-                          />
-                          <Form.Text className="text-muted">
-                            Only one image per variant. Selecting a new image will replace the existing one.
-                          </Form.Text>
-                        </div>
-                        {isUploading && (
-                          <div className="text-muted mb-2">
-                            <IconifyIcon icon="bx:loader-alt" className="spinner-border spinner-border-sm me-1" />
-                            Uploading...
-                          </div>
-                        )}
-                        {v.images && v.images.length > 0 && (
-                          <div className="mt-3">
-                            <Row>
-                              {v.images.map((img: { url: string; altText: string; isPrimary: boolean }, imgIndex: number) => (
-                                <Col md={3} key={imgIndex} className="mb-3">
-                                  <div className="position-relative">
-                                    <img
-                                      src={img.url}
-                                      alt={img.altText}
-                                      style={{ width: '100%', height: '150px', objectFit: 'cover' }}
-                                      className="img-thumbnail"
-                                    />
-                                    <Button
-                                      variant="danger"
-                                      size="sm"
-                                      className="position-absolute top-0 end-0 m-1"
-                                      onClick={() => removeVariantImage(index, imgIndex)}
-                                    >
-                                      <IconifyIcon icon="bx:x" />
-                                    </Button>
-                                  </div>
-                                </Col>
-                              ))}
-                            </Row>
-                          </div>
-                        )}
                       </Form.Group>
                     </Col>
                   </Row>

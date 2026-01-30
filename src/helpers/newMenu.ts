@@ -151,6 +151,19 @@ export const getNewMenuItems = (): MenuItemType[] => {
         },
       ],
     },
+    {
+      key: 'settings',
+      icon: 'bx:cog',
+      label: 'Settings',
+      children: [
+        {
+          key: 'settings-delivery-charge',
+          label: 'Delivery Charge',
+          url: '/settings/delivery-charge',
+          parentKey: 'settings',
+        },
+      ],
+    },
   ]
 }
 
