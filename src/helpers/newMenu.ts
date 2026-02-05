@@ -162,6 +162,18 @@ export const getNewMenuItems = (): MenuItemType[] => {
           url: '/settings/delivery-charge',
           parentKey: 'settings',
         },
+        {
+          key: 'settings-header-menu',
+          label: 'Header Menu',
+          url: '/ecommerce/header-menu',
+          parentKey: 'settings',
+        },
+        {
+          key: 'settings-footer',
+          label: 'Footer',
+          url: '/ecommerce/footer',
+          parentKey: 'settings',
+        },
       ],
     },
   ]

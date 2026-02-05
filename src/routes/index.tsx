@@ -30,6 +30,8 @@ const Comments = lazy(() => import('@/app/(admin)/ecommerce/comments/page'))
 const StaticPages = lazy(() => import('@/app/(admin)/ecommerce/static-pages/page'))
 const StaticPageCreate = lazy(() => import('@/app/(admin)/ecommerce/static-pages/create/page'))
 const StaticPageEdit = lazy(() => import('@/app/(admin)/ecommerce/static-pages/[pageId]/edit/page'))
+const HeaderMenu = lazy(() => import('@/app/(admin)/ecommerce/header-menu/page'))
+const Footer = lazy(() => import('@/app/(admin)/ecommerce/footer/page'))
 const DeliveryChargeSettings = lazy(() => import('@/app/(admin)/settings/delivery-charge/page'))
 const Chat = lazy(() => import('@/app/(admin)/apps/chat/page'))
 const Email = lazy(() => import('@/app/(admin)/apps/email/page'))
@@ -265,6 +267,16 @@ const appsRoutes: RoutesProps[] = [
     name: 'Edit Static Page',
     path: '/ecommerce/static-pages/:pageId/edit',
     element: <StaticPageEdit />,
+  },
+  {
+    name: 'Header Menu',
+    path: '/ecommerce/header-menu',
+    element: <HeaderMenu />,
+  },
+  {
+    name: 'Footer',
+    path: '/ecommerce/footer',
+    element: <Footer />,
   },
   {
     name: 'Chat',
