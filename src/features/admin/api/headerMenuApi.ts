@@ -18,12 +18,21 @@ export interface StaticMenuItem {
   isActive: boolean;
 }
 
+export interface ManualSubmenuItem {
+  name: string;
+  href: string;
+  target?: '_self' | '_blank';
+  order: number;
+  isActive: boolean;
+}
+
 export interface ManualMenuItem {
   name: string;
   href: string;
   target?: '_self' | '_blank';
   order: number;
   isActive: boolean;
+  submenus?: ManualSubmenuItem[];
 }
 
 export interface HeaderMenuConfig {

@@ -32,6 +32,7 @@ const HeaderMenuPage = () => {
   const [showManualModal, setShowManualModal] = useState(false);
   const [editingManualItem, setEditingManualItem] = useState<ManualMenuItem | null>(null);
   const [manualForm, setManualForm] = useState({ name: '', href: '', target: '_self' as '_self' | '_blank' });
+  const [submenus, setSubmenus] = useState<Array<{ name: string; href: string; target: '_self' | '_blank'; order: number; isActive: boolean }>>([]);
 
   useEffect(() => {
     fetchData();
@@ -125,28 +126,59 @@ const HeaderMenuPage = () => {
   const handleAddManualItem = () => {
     setEditingManualItem(null);
     setManualForm({ name: '', href: '', target: '_self' });
+    setSubmenus([]);
     setShowManualModal(true);
   };
 
-  const handleEditManualItem = (item: ManualMenuItem, index: number) => {
-    setEditingManualItem({ ...item, order: index });
-    setManualForm({ name: item.name, href: item.href, target: item.target || '_self' });
+  const handleEditManualItem = (itemId: string) => {
+    // Find the manual item from menuItemOrder
+    const orderItem = menuItemOrder.find(o => o.id === itemId && o.type === 'manual');
+    if (!orderItem) return;
+
+    // Count how many manual items come before this one in menuItemOrder
+    const manualItemsBefore = menuItemOrder.slice(0, menuItemOrder.indexOf(orderItem)).filter(o => o.type === 'manual').length;
+    
+    // Find the actual manual item from manualMenuItems array
+    const manualItem = manualMenuItems[manualItemsBefore];
+    if (!manualItem) return;
+
+    setEditingManualItem({ ...manualItem, order: manualItemsBefore });
+    setManualForm({ name: manualItem.name, href: manualItem.href, target: manualItem.target || '_self' });
+    setSubmenus(manualItem.submenus ? manualItem.submenus.map(sub => ({ ...sub, target: sub.target || '_self' })) : []);
     setShowManualModal(true);
   };
 
-  const handleDeleteManualItem = (index: number) => {
-    // Count how many manual items come before this one in the order
-    let manualCountBefore = 0;
-    menuItemOrder.forEach((orderItem) => {
-      if (orderItem.type === 'manual') {
-        if (manualCountBefore === index) {
-          // This is the item to remove
-          setMenuItemOrder((order) => order.filter(o => o.id !== orderItem.id));
-        }
-        manualCountBefore++;
-      }
-    });
-    setManualMenuItems((prev) => prev.filter((_, i) => i !== index));
+  const handleDeleteManualItem = (itemId: string) => {
+    if (!window.confirm('Are you sure you want to delete this menu item?')) {
+      return;
+    }
+
+    // Find the order item
+    const orderItemIndex = menuItemOrder.findIndex(o => o.id === itemId && o.type === 'manual');
+    if (orderItemIndex === -1) return;
+
+    // Count how many manual items come before this one
+    const manualItemsBefore = menuItemOrder.slice(0, orderItemIndex).filter(o => o.type === 'manual').length;
+
+    // Remove from menuItemOrder
+    setMenuItemOrder((order) => order.filter(o => o.id !== itemId));
+
+    // Remove from manualMenuItems
+    setManualMenuItems((prev) => prev.filter((_, i) => i !== manualItemsBefore));
+  };
+
+  const handleAddSubmenu = () => {
+    setSubmenus([...submenus, { name: '', href: '', target: '_self', order: submenus.length, isActive: true }]);
+  };
+
+  const handleUpdateSubmenu = (index: number, field: string, value: any) => {
+    const updated = [...submenus];
+    updated[index] = { ...updated[index], [field]: value };
+    setSubmenus(updated);
+  };
+
+  const handleDeleteSubmenu = (index: number) => {
+    setSubmenus(submenus.filter((_, i) => i !== index).map((sub, i) => ({ ...sub, order: i })));
   };
 
   const handleSaveManualItem = () => {
@@ -155,18 +187,32 @@ const HeaderMenuPage = () => {
       return;
     }
 
+    // Validate submenus
+    const validSubmenus = submenus.filter(sub => sub.name && sub.href);
+    if (submenus.length > 0 && submenus.some(sub => !sub.name || !sub.href)) {
+      toast.error('All submenus must have both name and URL');
+      return;
+    }
+
     if (editingManualItem !== null) {
-      // Update existing
-      const index = editingManualItem.order;
+      // Update existing - find the item by matching name (since order might have changed)
       setManualMenuItems((prev) => {
         const updated = [...prev];
-        updated[index] = {
-          name: manualForm.name,
-          href: manualForm.href,
-          target: manualForm.target,
-          order: index,
-          isActive: updated[index]?.isActive ?? true
-        };
+        const indexToUpdate = updated.findIndex(item => 
+          item.name === editingManualItem.name && 
+          item.href === editingManualItem.href
+        );
+        
+        if (indexToUpdate !== -1) {
+          updated[indexToUpdate] = {
+            name: manualForm.name,
+            href: manualForm.href,
+            target: manualForm.target,
+            order: updated[indexToUpdate].order, // Keep original order
+            isActive: updated[indexToUpdate].isActive ?? true,
+            submenus: validSubmenus.length > 0 ? validSubmenus : undefined
+          };
+        }
         return updated;
       });
     } else {
@@ -176,7 +222,8 @@ const HeaderMenuPage = () => {
         href: manualForm.href,
         target: manualForm.target,
         order: menuItemOrder.length,
-        isActive: true
+        isActive: true,
+        submenus: validSubmenus.length > 0 ? validSubmenus : undefined
       };
       const newId = `manual-${manualItemIdCounter}`;
       setManualMenuItems((prev) => [...prev, newItem]);
@@ -187,6 +234,7 @@ const HeaderMenuPage = () => {
     setShowManualModal(false);
     setEditingManualItem(null);
     setManualForm({ name: '', href: '', target: '_self' });
+    setSubmenus([]);
   };
 
   const getCombinedMenuItems = (): MenuItem[] => {
@@ -310,7 +358,8 @@ const HeaderMenuPage = () => {
               href: originalItem.href,
               target: originalItem.target || '_self',
               order: orderValue,  // Use the current index as order (0, 1, 2, etc.)
-              isActive: originalItem.isActive !== false
+              isActive: originalItem.isActive !== false,
+              submenus: originalItem.submenus && originalItem.submenus.length > 0 ? originalItem.submenus : undefined
             });
           }
         }
@@ -473,7 +522,7 @@ const HeaderMenuPage = () => {
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <h5 className="mb-0">Custom Menu Items</h5>
                   <Button variant="primary" size="sm" onClick={handleAddManualItem}>
-                    <IconifyIcon icon="bx:plus" className="me-1" />
+                    <IconifyIcon icon="bx:plus" className="me-1" width={16} height={16} />
                     Add Manual Menu Item
                   </Button>
                 </div>
@@ -531,7 +580,18 @@ const HeaderMenuPage = () => {
                               {item.type === 'category' ? 'Category' : 'Manual'}
                             </Badge>
                           </td>
-                          <td>{item.name}</td>
+                          <td>
+                            {item.name}
+                            {item.type === 'manual' && (() => {
+                              const manualItem = manualMenuItems.find(m => m.name === item.name);
+                              const submenuCount = manualItem?.submenus?.length || 0;
+                              return submenuCount > 0 ? (
+                                <Badge bg="info" className="ms-2">
+                                  {submenuCount} submenu{submenuCount !== 1 ? 's' : ''}
+                                </Badge>
+                              ) : null;
+                            })()}
+                          </td>
                           <td>
                             {item.type === 'manual' ? (
                               <>
@@ -551,19 +611,16 @@ const HeaderMenuPage = () => {
                                   <Button
                                     variant="outline-primary"
                                     size="sm"
-                                    onClick={() => handleEditManualItem(
-                                      manualMenuItems[item.order - selectedCategories.length],
-                                      item.order - selectedCategories.length
-                                    )}
+                                    onClick={() => handleEditManualItem(item.id)}
                                   >
-                                    <IconifyIcon icon="bx:edit" />
+                                    <IconifyIcon icon="bx:edit" width={16} height={16} />
                                   </Button>
                                   <Button
                                     variant="outline-danger"
                                     size="sm"
-                                    onClick={() => handleDeleteManualItem(item.order - selectedCategories.length)}
+                                    onClick={() => handleDeleteManualItem(item.id)}
                                   >
-                                    <IconifyIcon icon="bx:trash" />
+                                    <IconifyIcon icon="bx:trash" width={16} height={16} />
                                   </Button>
                                 </>
                               )}
@@ -573,7 +630,7 @@ const HeaderMenuPage = () => {
                                 onClick={() => handleMoveUp(index)}
                                 disabled={index === 0}
                               >
-                                <IconifyIcon icon="bx:up-arrow" />
+                                <IconifyIcon icon="bx:up-arrow" width={16} height={16} />
                               </Button>
                               <Button
                                 variant="outline-primary"
@@ -581,7 +638,7 @@ const HeaderMenuPage = () => {
                                 onClick={() => handleMoveDown(index)}
                                 disabled={index === combinedMenuItems.length - 1}
                               >
-                                <IconifyIcon icon="bx:down-arrow" />
+                                <IconifyIcon icon="bx:down-arrow" width={16} height={16} />
                               </Button>
                             </div>
                           </td>
@@ -631,6 +688,64 @@ const HeaderMenuPage = () => {
                 <option value="_blank">New Tab</option>
               </Form.Select>
             </Form.Group>
+
+            <hr className="my-4" />
+
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <Form.Label className="mb-0">Submenus (Optional)</Form.Label>
+              <Button variant="outline-primary" size="sm" onClick={handleAddSubmenu}>
+                <IconifyIcon icon="bx:plus" className="me-1" width={14} height={14} />
+                Add Submenu
+              </Button>
+            </div>
+
+            {submenus.length > 0 && (
+              <div className="mb-3">
+                {submenus.map((submenu, index) => (
+                  <Card key={index} className="mb-2">
+                    <CardBody>
+                      <div className="d-flex justify-content-between align-items-start mb-2">
+                        <strong>Submenu {index + 1}</strong>
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          onClick={() => handleDeleteSubmenu(index)}
+                        >
+                          <IconifyIcon icon="bx:trash" width={14} height={14} />
+                        </Button>
+                      </div>
+                      <div className="row g-2">
+                        <div className="col-md-5">
+                          <Form.Control
+                            type="text"
+                            placeholder="Submenu Name"
+                            value={submenu.name}
+                            onChange={(e) => handleUpdateSubmenu(index, 'name', e.target.value)}
+                          />
+                        </div>
+                        <div className="col-md-5">
+                          <Form.Control
+                            type="text"
+                            placeholder="URL"
+                            value={submenu.href}
+                            onChange={(e) => handleUpdateSubmenu(index, 'href', e.target.value)}
+                          />
+                        </div>
+                        <div className="col-md-2">
+                          <Form.Select
+                            value={submenu.target}
+                            onChange={(e) => handleUpdateSubmenu(index, 'target', e.target.value)}
+                          >
+                            <option value="_self">Same</option>
+                            <option value="_blank">New Tab</option>
+                          </Form.Select>
+                        </div>
+                      </div>
+                    </CardBody>
+                  </Card>
+                ))}
+              </div>
+            )}
           </Form>
         </Modal.Body>
         <Modal.Footer>
@@ -647,7 +762,7 @@ const HeaderMenuPage = () => {
         <CardBody>
           <div className="d-flex justify-content-end gap-2">
             <Button variant="secondary" onClick={fetchData} disabled={saving}>
-              <IconifyIcon icon="bx:refresh" className="me-1" />
+              <IconifyIcon icon="bx:refresh" className="me-1" width={16} height={16} />
               Reset
             </Button>
             <Button variant="primary" onClick={handleSave} disabled={saving}>
@@ -658,7 +773,7 @@ const HeaderMenuPage = () => {
                 </>
               ) : (
                 <>
-                  <IconifyIcon icon="bx:save" className="me-1" />
+                  <IconifyIcon icon="bx:save" className="me-1" width={16} height={16} />
                   Save Changes
                 </>
               )}

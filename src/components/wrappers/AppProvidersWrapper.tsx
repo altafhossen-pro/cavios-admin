@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 import { DEFAULT_PAGE_TITLE } from '@/context/constants'
 import { AuthProvider } from '@/context/useAuthContext'
@@ -27,7 +28,18 @@ const AppProvidersWrapper = ({ children }: ChildrenType) => {
         <LayoutProvider>
           <NotificationProvider>
             {children}
-            <ToastContainer theme="colored" />
+            <ToastContainer 
+              theme="colored" 
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+            />
           </NotificationProvider>
         </LayoutProvider>
       </AuthProvider>

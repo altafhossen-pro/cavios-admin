@@ -41,12 +41,26 @@ export interface FollowUsColumn {
   isActive: boolean;
 }
 
+export interface BottomSection {
+  privacyPolicy: {
+    label: string;
+    href: string;
+    autoDetect: boolean;
+    suggestedUrl?: string;
+  };
+  termsAndConditions: {
+    label: string;
+    href: string;
+    autoDetect: boolean;
+    suggestedUrl?: string;
+  };
+  copyright: string;
+}
+
 export interface FooterConfig {
   _id?: string;
   dynamicColumns: DynamicColumn[];
-  supportColumn: SupportColumn;
-  companyInfoColumn: CompanyInfoColumn;
-  followUsColumn: FollowUsColumn;
+  bottomSection?: BottomSection;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -72,20 +86,18 @@ export const getFooterConfig = async (): Promise<FooterConfigResponse> => {
       success: false,
       data: {
         dynamicColumns: [],
-        supportColumn: {
-          heading: 'SUPPORT',
-          items: [],
-          isActive: true
-        },
-        companyInfoColumn: {
-          heading: 'COMPANY INFO',
-          items: [],
-          isActive: true
-        },
-        followUsColumn: {
-          heading: 'FOLLOW US',
-          socialLinks: [],
-          isActive: true
+        bottomSection: {
+          privacyPolicy: {
+            label: 'Privacy Policy',
+            href: '',
+            autoDetect: true
+          },
+          termsAndConditions: {
+            label: 'Terms & Conditions',
+            href: '',
+            autoDetect: true
+          },
+          copyright: `© Cavios® ${new Date().getFullYear()}. Designed for performance. Built to last.`
         }
       },
       message: err.response?.data?.message || err.message || 'Failed to fetch footer config',
@@ -110,20 +122,18 @@ export const updateFooterConfig = async (
       success: false,
       data: {
         dynamicColumns: [],
-        supportColumn: {
-          heading: 'SUPPORT',
-          items: [],
-          isActive: true
-        },
-        companyInfoColumn: {
-          heading: 'COMPANY INFO',
-          items: [],
-          isActive: true
-        },
-        followUsColumn: {
-          heading: 'FOLLOW US',
-          socialLinks: [],
-          isActive: true
+        bottomSection: {
+          privacyPolicy: {
+            label: 'Privacy Policy',
+            href: '',
+            autoDetect: true
+          },
+          termsAndConditions: {
+            label: 'Terms & Conditions',
+            href: '',
+            autoDetect: true
+          },
+          copyright: `© Cavios® ${new Date().getFullYear()}. Designed for performance. Built to last.`
         }
       },
       message: err.response?.data?.message || err.message || 'Failed to update footer config',
