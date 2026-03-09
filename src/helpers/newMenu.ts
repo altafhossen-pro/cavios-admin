@@ -152,6 +152,25 @@ export const getNewMenuItems = (): MenuItemType[] => {
       ],
     },
     {
+      key: 'menu',
+      icon: 'bx:menu',
+      label: 'Menu',
+      children: [
+        {
+          key: 'menu-header',
+          label: 'Header Menu',
+          url: '/ecommerce/header-menu',
+          parentKey: 'menu',
+        },
+        {
+          key: 'menu-footer',
+          label: 'Footer',
+          url: '/ecommerce/footer',
+          parentKey: 'menu',
+        },
+      ],
+    },
+    {
       key: 'settings',
       icon: 'bx:cog',
       label: 'Settings',
@@ -160,18 +179,6 @@ export const getNewMenuItems = (): MenuItemType[] => {
           key: 'settings-delivery-charge',
           label: 'Delivery Charge',
           url: '/settings/delivery-charge',
-          parentKey: 'settings',
-        },
-        {
-          key: 'settings-header-menu',
-          label: 'Header Menu',
-          url: '/ecommerce/header-menu',
-          parentKey: 'settings',
-        },
-        {
-          key: 'settings-footer',
-          label: 'Footer',
-          url: '/ecommerce/footer',
           parentKey: 'settings',
         },
       ],
