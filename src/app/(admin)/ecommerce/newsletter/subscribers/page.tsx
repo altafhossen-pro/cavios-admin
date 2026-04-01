@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardBody, Table, Badge, Form, Pagination as BSPagination, Row, Col, Button, Dropdown } from 'react-bootstrap';
-import Preloader from '@/components/Preloader';
 import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 import PageMetaData from '@/components/PageTitle';
 import IconifyIcon from '@/components/wrappers/IconifyIcon';
