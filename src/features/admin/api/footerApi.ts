@@ -6,6 +6,8 @@ export interface FooterColumnItem {
   target?: '_self' | '_blank';
   order: number;
   isActive: boolean;
+  socialEnabled: boolean;
+  socialType: string;
 }
 
 export interface DynamicColumn {

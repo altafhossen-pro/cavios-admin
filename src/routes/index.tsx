@@ -39,6 +39,8 @@ const Todo = lazy(() => import('@/app/(admin)/apps/todo/page'))
 const Social = lazy(() => import('@/app/(admin)/apps/social/page'))
 const Contacts = lazy(() => import('@/app/(admin)/apps/contacts/page'))
 const InvoiceDetails = lazy(() => import('@/app/(admin)/invoices/[orderId]/page'))
+const NewsletterSubscribers = lazy(() => import('@/app/(admin)/ecommerce/newsletter/subscribers/page'))
+const NewsletterSettings = lazy(() => import('@/app/(admin)/ecommerce/newsletter/settings/page'))
 
 // Pages Routes
 const Profile = lazy(() => import('@/app/(admin)/pages/profile/page'))
@@ -277,6 +279,16 @@ const appsRoutes: RoutesProps[] = [
     name: 'Footer',
     path: '/ecommerce/footer',
     element: <Footer />,
+  },
+  {
+    name: 'Newsletter Subscribers',
+    path: '/ecommerce/newsletter/subscribers',
+    element: <NewsletterSubscribers />,
+  },
+  {
+    name: 'Newsletter Settings',
+    path: '/ecommerce/newsletter/settings',
+    element: <NewsletterSettings />,
   },
   {
     name: 'Chat',

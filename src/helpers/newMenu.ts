@@ -133,6 +133,25 @@ export const getNewMenuItems = (): MenuItemType[] => {
         ],
       },
     {
+      key: 'newsletter',
+      icon: 'bx:envelope',
+      label: 'Newsletter',
+      children: [
+        {
+          key: 'newsletter-subscribers',
+          label: 'Subscribers',
+          url: '/ecommerce/newsletter/subscribers',
+          parentKey: 'newsletter',
+        },
+        {
+          key: 'newsletter-settings',
+          label: 'Newsletter Settings',
+          url: '/ecommerce/newsletter/settings',
+          parentKey: 'newsletter',
+        },
+      ],
+    },
+    {
       key: 'users',
       icon: 'iconamoon:profile-circle-duotone',
       label: 'Users',

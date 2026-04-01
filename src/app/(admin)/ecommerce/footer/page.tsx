@@ -20,7 +20,13 @@ const FooterPage = () => {
   const [editingColumn, setEditingColumn] = useState<DynamicColumn | null>(null);
   const [editingItem, setEditingItem] = useState<{ columnIndex?: number; itemIndex?: number; type: 'dynamic' } | null>(null);
   const [columnForm, setColumnForm] = useState({ heading: '' });
-  const [itemForm, setItemForm] = useState({ label: '', href: '', target: '_self' as '_self' | '_blank' });
+  const [itemForm, setItemForm] = useState({ 
+    label: '', 
+    href: '', 
+    target: '_self' as '_self' | '_blank',
+    socialEnabled: false,
+    socialType: ''
+  });
   const [privacyPageExists, setPrivacyPageExists] = useState<boolean | null>(null);
   const [termsPageExists, setTermsPageExists] = useState<boolean | null>(null);
 
@@ -141,13 +147,19 @@ const FooterPage = () => {
 
   const handleAddItem = (type: 'dynamic', columnIndex?: number) => {
     setEditingItem({ type, columnIndex });
-    setItemForm({ label: '', href: '', target: '_self' });
+    setItemForm({ label: '', href: '', target: '_self', socialEnabled: false, socialType: '' });
     setShowItemModal(true);
   };
 
   const handleEditItem = (item: FooterColumnItem, type: 'dynamic', columnIndex?: number, itemIndex?: number) => {
     setEditingItem({ type, columnIndex, itemIndex });
-    setItemForm({ label: item.label, href: item.href, target: item.target || '_self' });
+    setItemForm({ 
+      label: item.label, 
+      href: item.href, 
+      target: item.target || '_self',
+      socialEnabled: item.socialEnabled || false,
+      socialType: item.socialType || ''
+    });
     setShowItemModal(true);
   };
 
@@ -173,6 +185,8 @@ const FooterPage = () => {
       label: itemForm.label,
       href: itemForm.href,
       target: itemForm.target,
+      socialEnabled: itemForm.socialEnabled,
+      socialType: itemForm.socialType,
       order: 0,
       isActive: true
     };
@@ -193,7 +207,7 @@ const FooterPage = () => {
 
     setShowItemModal(false);
     setEditingItem(null);
-    setItemForm({ label: '', href: '', target: '_self' });
+    setItemForm({ label: '', href: '', target: '_self', socialEnabled: false, socialType: '' });
   };
 
 
@@ -334,7 +348,16 @@ const FooterPage = () => {
                             <tbody>
                               {column.items.map((item, itemIndex) => (
                                 <tr key={itemIndex}>
-                                  <td>{item.label}</td>
+                                  <td>
+                                    {item.socialEnabled ? (
+                                      <Badge bg="info" className="d-inline-flex align-items-center gap-1">
+                                        <IconifyIcon icon={`bx:bxl-${item.socialType || 'share-alt'}`} />
+                                        Social ({item.socialType})
+                                      </Badge>
+                                    ) : (
+                                      item.label
+                                    )}
+                                  </td>
                                   <td><code>{item.href}</code></td>
                                   <td><Badge bg={item.target === '_blank' ? 'info' : 'secondary'}>{item.target || '_self'}</Badge></td>
                                   <td>
@@ -723,6 +746,39 @@ const FooterPage = () => {
                 <option value="_blank">New Tab</option>
               </Form.Select>
             </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Check
+                type="checkbox"
+                id="social-toggle"
+                label="Enable Social Media Icon"
+                checked={itemForm.socialEnabled}
+                onChange={(e) => setItemForm({ ...itemForm, socialEnabled: e.target.checked, socialType: e.target.checked ? (itemForm.socialType || 'facebook') : '' })}
+              />
+            </Form.Group>
+
+            {itemForm.socialEnabled && (
+              <Form.Group className="mb-3">
+                <Form.Label>Select Social Platform</Form.Label>
+                <Form.Select
+                  value={itemForm.socialType}
+                  onChange={(e) => setItemForm({ ...itemForm, socialType: e.target.value })}
+                >
+                  <option value="facebook">Facebook</option>
+                  <option value="youtube">YouTube</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="twitter">Twitter / X</option>
+                  <option value="linkedin">LinkedIn</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="tiktok">TikTok</option>
+                  <option value="pinterest">Pinterest</option>
+                  <option value="amazon">Amazon</option>
+                </Form.Select>
+                <Form.Text className="text-muted">
+                  Note: When this is enabled, the icon will replace the label in the footer.
+                </Form.Text>
+              </Form.Group>
+            )}
           </Form>
         </Modal.Body>
         <Modal.Footer>
