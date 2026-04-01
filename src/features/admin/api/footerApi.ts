@@ -97,7 +97,7 @@ export const getFooterConfig = async (): Promise<FooterConfigResponse> => {
             href: '',
             autoDetect: true
           },
-          copyright: `© Cavios® ${new Date().getFullYear()}. Designed for performance. Built to last.`
+          copyright: `© Cavios® ${new Date().getFullYear()}. Designed for performance.`
         }
       },
       message: err.response?.data?.message || err.message || 'Failed to fetch footer config',
@@ -133,7 +133,7 @@ export const updateFooterConfig = async (
             href: '',
             autoDetect: true
           },
-          copyright: `© Cavios® ${new Date().getFullYear()}. Designed for performance. Built to last.`
+          copyright: `© Cavios® ${new Date().getFullYear()}. Designed for performance.`
         }
       },
       message: err.response?.data?.message || err.message || 'Failed to update footer config',

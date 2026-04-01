@@ -68,7 +68,7 @@ const FooterPage = () => {
               href: '',
               autoDetect: true
             },
-            copyright: `© Cavios® ${currentYear}. Designed for performance. Built to last.`
+            copyright: `© Cavios® ${currentYear}. Designed for performance.`
           };
         }
         setConfig(configData);
@@ -408,7 +408,7 @@ const FooterPage = () => {
                                 href: '',
                                 autoDetect: true
                               },
-                              copyright: config.bottomSection?.copyright || `© Cavios® ${new Date().getFullYear()}. Designed for performance. Built to last.`
+                              copyright: config.bottomSection?.copyright || `© Cavios® ${new Date().getFullYear()}. Designed for performance.`
                             }
                           });
                         }}
@@ -433,7 +433,7 @@ const FooterPage = () => {
                                 href: '',
                                 autoDetect: true
                               },
-                              copyright: config.bottomSection?.copyright || `© Cavios® ${new Date().getFullYear()}. Designed for performance. Built to last.`
+                              copyright: config.bottomSection?.copyright || `© Cavios® ${new Date().getFullYear()}. Designed for performance.`
                             }
                           });
                         }}
@@ -490,7 +490,7 @@ const FooterPage = () => {
                                   href: '',
                                   autoDetect: true
                                 },
-                                copyright: config.bottomSection?.copyright || `© Cavios® ${new Date().getFullYear()}. Designed for performance. Built to last.`
+                                copyright: config.bottomSection?.copyright || `© Cavios® ${new Date().getFullYear()}. Designed for performance.`
                               }
                             });
                           }}
@@ -525,7 +525,7 @@ const FooterPage = () => {
                                 href: config.bottomSection?.termsAndConditions?.href || '',
                                 autoDetect: config.bottomSection?.termsAndConditions?.autoDetect ?? true
                               },
-                              copyright: config.bottomSection?.copyright || `© Cavios® ${new Date().getFullYear()}. Designed for performance. Built to last.`
+                              copyright: config.bottomSection?.copyright || `© Cavios® ${new Date().getFullYear()}. Designed for performance.`
                             }
                           });
                         }}
@@ -550,7 +550,7 @@ const FooterPage = () => {
                                 href: config.bottomSection?.termsAndConditions?.href || '',
                                 autoDetect: e.target.checked
                               },
-                              copyright: config.bottomSection?.copyright || `© Cavios® ${new Date().getFullYear()}. Designed for performance. Built to last.`
+                              copyright: config.bottomSection?.copyright || `© Cavios® ${new Date().getFullYear()}. Designed for performance.`
                             }
                           });
                         }}
@@ -607,7 +607,7 @@ const FooterPage = () => {
                                   href: e.target.value,
                                   autoDetect: false
                                 },
-                                copyright: config.bottomSection?.copyright || `© Cavios® ${new Date().getFullYear()}. Designed for performance. Built to last.`
+                                copyright: config.bottomSection?.copyright || `© Cavios® ${new Date().getFullYear()}. Designed for performance.`
                               }
                             });
                           }}
@@ -627,7 +627,7 @@ const FooterPage = () => {
                       <Form.Label>Copyright</Form.Label>
                       <Form.Control
                         type="text"
-                        value={config.bottomSection?.copyright || `© Cavios® ${new Date().getFullYear()}. Designed for performance. Built to last.`}
+                        value={config.bottomSection?.copyright || `© Cavios® ${new Date().getFullYear()}. Designed for performance.`}
                         onChange={(e) => {
                           setConfig({
                             ...config,
