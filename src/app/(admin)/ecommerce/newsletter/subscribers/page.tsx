@@ -4,11 +4,17 @@ import PageBreadcrumb from '@/components/layout/PageBreadcrumb';
 import PageMetaData from '@/components/PageTitle';
 import IconifyIcon from '@/components/wrappers/IconifyIcon';
 import { getSubscribers, exportSubscribers, Subscriber } from '@/features/admin/api/newsletterApi';
+import DeleteSubscriberModal from './components/DeleteSubscriberModal';
 
 const NewsletterSubscribersPage = () => {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [deleteModal, setDeleteModal] = useState<{ show: boolean, id: string | null, email: string }>({
+    show: false,
+    id: null,
+    email: ''
+  });
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
   const [filters, setFilters] = useState({
     search: '',
@@ -65,6 +71,14 @@ const NewsletterSubscribersPage = () => {
     } finally {
       setExporting(false);
     }
+  };
+
+  const handleDeleteClick = (id: string, email: string) => {
+    setDeleteModal({ show: true, id, email });
+  };
+
+  const handleDeleteSuccess = () => {
+    fetchData();
   };
 
   const formatDateTime = (dateStr: string) => {
@@ -148,12 +162,13 @@ const NewsletterSubscribersPage = () => {
                 <th>Email Address</th>
                 <th>Status</th>
                 <th>Subscribed At</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
               {loading && subscribers.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="text-center py-5">
+                  <td colSpan={5} className="text-center py-5">
                     <div className="spinner-border text-primary" role="status">
                       <span className="visually-hidden">Loading...</span>
                     </div>
@@ -172,12 +187,22 @@ const NewsletterSubscribersPage = () => {
                     <td className="text-muted small">
                       {formatDateTime(item.createdAt)}
                     </td>
+                    <td>
+                      <Button 
+                        variant="soft-danger" 
+                        size="sm" 
+                        className="btn-icon"
+                        onClick={() => handleDeleteClick(item._id, item.email)}
+                      >
+                        <IconifyIcon icon="solar:trash-bin-trash-bold" />
+                      </Button>
+                    </td>
                   </tr>
                 ))
               )}
               {!loading && subscribers.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="text-center py-5 text-muted">
+                  <td colSpan={5} className="text-center py-5 text-muted">
                     <IconifyIcon icon="solar:document-outline" className="fs-1 d-block mx-auto mb-2 opacity-25" />
                     No subscribers found matching your criteria.
                   </td>
@@ -204,6 +229,14 @@ const NewsletterSubscribersPage = () => {
           )}
         </CardBody>
       </Card>
+
+      <DeleteSubscriberModal
+        show={deleteModal.show}
+        onHide={() => setDeleteModal({ ...deleteModal, show: false })}
+        subscriberId={deleteModal.id}
+        subscriberEmail={deleteModal.email}
+        onSuccess={handleDeleteSuccess}
+      />
     </>
   );
 };

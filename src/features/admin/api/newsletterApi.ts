@@ -51,3 +51,8 @@ export const exportSubscribers = async (filters: any = {}) => {
   });
   return response.data;
 };
+
+export const deleteSubscriber = async (id: string) => {
+  const response = await httpClient.delete(`/newsletter/subscribers/${id}`);
+  return response.data;
+};
