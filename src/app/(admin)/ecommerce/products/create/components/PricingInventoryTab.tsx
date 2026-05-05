@@ -325,7 +325,6 @@ const PricingInventoryTab = ({ watch, setValue, uploading: parentUploading }: Ta
                           value={v.sku}
                           onChange={(e) => updateVariant(index, 'sku', e.target.value)}
                           placeholder="e.g., PRODUCT-SIZE-COLOR"
-                          required
                         />
                         <Form.Text className="text-muted">SKU is required for all variants</Form.Text>
                       </Form.Group>
@@ -340,7 +339,6 @@ const PricingInventoryTab = ({ watch, setValue, uploading: parentUploading }: Ta
                             accept="image/*"
                             onChange={(e) => handleVariantImageUpload(index, e as React.ChangeEvent<HTMLInputElement>)}
                             disabled={isUploading}
-                            required={!v.images || v.images.length === 0}
                           />
                           <Form.Text className="text-muted">
                             One image per variant is required. Selecting a new image will replace the existing one.
@@ -430,7 +428,6 @@ const PricingInventoryTab = ({ watch, setValue, uploading: parentUploading }: Ta
                               value={colorValue}
                               onChange={(e) => handleColorNameChange(index, e.target.value)}
                               placeholder="Enter color name (e.g., Red, Blue)"
-                              required
                               className="mb-2"
                             />
                             <div className="d-flex align-items-center gap-2 mb-2">
@@ -517,7 +514,6 @@ const PricingInventoryTab = ({ watch, setValue, uploading: parentUploading }: Ta
                           value={v.currentPrice}
                           onChange={(e) => updateVariant(index, 'currentPrice', parseFloat(e.target.value) || 0)}
                           placeholder="0.00"
-                          required
                         />
                       </Form.Group>
                     </Col>
